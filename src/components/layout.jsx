@@ -1,17 +1,24 @@
-﻿import { Avatar, Badge, Button, Layout, Space, Typography } from 'antd';
-import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Layout, Typography } from 'antd';
+import { LogoutOutlined } from '@ant-design/icons';
 import AITable from './AITable.jsx';
 import slideLogo from '../assets/ui/slide_logo.svg';
 import { layoutClassNames } from './StyleComponent.js';
 
 const { Header, Content } = Layout;
 
-function DashboardLayout({ username, onLogout }) {
+const getProfileValue = (value) => value || 'Not set';
+
+function DashboardLayout({ userProfile, onLogout }) {
+  const headerDetails = [
+    { label: 'User Name', value: getProfileValue(userProfile.username) },
+    { label: 'Dept Name', value: "AI Engineering" },
+    { label: 'Role', value: "Admin" },
+  ];
+
   return (
     <Layout className={layoutClassNames.layout}>
       <Header className={layoutClassNames.header}>
         <div className={layoutClassNames.brandMini}>
-          <img src={slideLogo} alt="AI Hub logo" className={layoutClassNames.miniLogo} />
           <div>
             <Typography.Title level={5} className={layoutClassNames.headerTitle}>
               AI Hub
@@ -20,27 +27,29 @@ function DashboardLayout({ username, onLogout }) {
           </div>
         </div>
 
-        <Space size="large">
-          <Badge color="#22C55E" text="Local authentication" />
-          <Button icon={<LogoutOutlined />} onClick={onLogout}>
-            Logout
-          </Button>
-        </Space>
+        <div className={layoutClassNames.headerRight}>
+          <div className={layoutClassNames.headerActions}>
+            <div className={layoutClassNames.headerProfile}>
+              {headerDetails.map((detail) => (
+                <div key={detail.label} className={layoutClassNames.headerProfileItem}>
+                  <Typography.Text className={layoutClassNames.headerProfileLabel}>{detail.label}</Typography.Text>
+                  <Typography.Text className={layoutClassNames.headerProfileValue} strong>
+                    {detail.value}
+                  </Typography.Text>
+                </div>
+              ))}
+            </div>
+
+            <Button icon={<LogoutOutlined />} onClick={onLogout}>
+              Logout
+            </Button>
+          </div>
+
+          <img src={slideLogo} alt="AI Hub logo" className={layoutClassNames.headerLogo} />
+        </div>
       </Header>
 
       <Content className={layoutClassNames.content}>
-        <section className={layoutClassNames.welcomeCard}>
-          <Space size="middle" align="center">
-            <Avatar size={54} icon={<UserOutlined />} className={layoutClassNames.userAvatar} />
-            <div>
-              <Typography.Text className={layoutClassNames.welcomeCaption}>Logged in user</Typography.Text>
-              <Typography.Title level={3} className={layoutClassNames.welcomeName}>
-                {username}
-              </Typography.Title>
-            </div>
-          </Space>
-        </section>
-
         <AITable />
       </Content>
     </Layout>

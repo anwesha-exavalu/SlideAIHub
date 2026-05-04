@@ -5,6 +5,43 @@ import AgentPlaceholderPage from './components/AgentPlaceholderPage.jsx';
 import Login from './components/login.jsx';
 import DashboardLayout from './components/layout.jsx';
 
+const USER_STORAGE_KEY = 'aihub-user';
+const LEGACY_USERNAME_KEY = 'aihub-username';
+const EMPTY_USER_PROFILE = {
+  username: '',
+  department: '',
+  role: '',
+};
+
+function readStoredUserProfile() {
+  if (typeof window === 'undefined') {
+    return EMPTY_USER_PROFILE;
+  }
+
+  const storedProfile = window.localStorage.getItem(USER_STORAGE_KEY);
+
+  if (storedProfile) {
+    try {
+      const parsedProfile = JSON.parse(storedProfile);
+
+      return {
+        username: parsedProfile.username?.trim?.() ?? '',
+        department: parsedProfile.department?.trim?.() ?? '',
+        role: parsedProfile.role?.trim?.() ?? '',
+      };
+    } catch {
+      window.localStorage.removeItem(USER_STORAGE_KEY);
+    }
+  }
+
+  const legacyUsername = window.localStorage.getItem(LEGACY_USERNAME_KEY) ?? '';
+
+  return {
+    ...EMPTY_USER_PROFILE,
+    username: legacyUsername.trim(),
+  };
+}
+
 function AppRoutes() {
   const [messageApi, messageContext] = message.useMessage();
   const [loginForm] = Form.useForm();
@@ -12,20 +49,19 @@ function AppRoutes() {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [isForgotSubmitting, setIsForgotSubmitting] = useState(false);
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
-  const [username, setUsername] = useState(() => {
-    if (typeof window === 'undefined') {
-      return '';
-    }
-
-    return window.localStorage.getItem('aihub-username') ?? '';
-  });
+  const [userProfile, setUserProfile] = useState(readStoredUserProfile);
 
   const navigate = useNavigate();
+  const isAuthenticated = Boolean(userProfile.username);
 
   const handleLogin = async (values) => {
-    const safeUsername = values.username.trim();
+    const nextUserProfile = {
+      username: values.username.trim(),
+      department: values.department.trim(),
+      role: values.role.trim(),
+    };
 
-    if (!safeUsername) {
+    if (!nextUserProfile.username) {
       return;
     }
 
@@ -35,12 +71,13 @@ function AppRoutes() {
     });
 
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('aihub-username', safeUsername);
+      window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUserProfile));
+      window.localStorage.setItem(LEGACY_USERNAME_KEY, nextUserProfile.username);
     }
 
-    setUsername(safeUsername);
+    setUserProfile(nextUserProfile);
     setIsLoginLoading(false);
-    messageApi.success(`Welcome to AI Hub, ${safeUsername}`);
+    messageApi.success(`Welcome to AI Hub, ${nextUserProfile.username}`);
     loginForm.resetFields(['password']);
     navigate('/dashboard', { replace: true });
   };
@@ -59,10 +96,11 @@ function AppRoutes() {
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
-      window.localStorage.removeItem('aihub-username');
+      window.localStorage.removeItem(USER_STORAGE_KEY);
+      window.localStorage.removeItem(LEGACY_USERNAME_KEY);
     }
 
-    setUsername('');
+    setUserProfile(EMPTY_USER_PROFILE);
     loginForm.resetFields();
     messageApi.info('Logged out successfully');
     navigate('/login', { replace: true });
@@ -97,8 +135,8 @@ function AppRoutes() {
         <Route
           path="/dashboard"
           element={
-            username ? (
-              <DashboardLayout username={username} onLogout={handleLogout} />
+            isAuthenticated ? (
+              <DashboardLayout userProfile={userProfile} onLogout={handleLogout} />
             ) : (
               <Navigate to="/" replace />
             )
@@ -106,7 +144,7 @@ function AppRoutes() {
         />
         <Route
           path="/agent/:agentId"
-          element={username ? <AgentPlaceholderPage /> : <Navigate to="/" replace />}
+          element={isAuthenticated ? <AgentPlaceholderPage /> : <Navigate to="/" replace />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
