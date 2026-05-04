@@ -1,6 +1,7 @@
 ﻿import { useMemo, useState } from 'react';
 import { App as AntdApp, ConfigProvider, Form, message } from 'antd';
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import AgentPlaceholderPage from './components/AgentPlaceholderPage.jsx';
 import Login from './components/login.jsx';
 import DashboardLayout from './components/layout.jsx';
 
@@ -102,6 +103,10 @@ function AppRoutes() {
               <Navigate to="/" replace />
             )
           }
+        />
+        <Route
+          path="/agent/:agentId"
+          element={username ? <AgentPlaceholderPage /> : <Navigate to="/" replace />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

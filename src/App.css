@@ -217,6 +217,55 @@
   color: var(--color-483499) !important;
 }
 
+.agent-name-link {
+  color: var(--color-483499);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.agent-name-link:hover {
+  color: var(--color-6648DC);
+}
+
+.agent-page-layout {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(224, 231, 255, 0.8), transparent 34%),
+    linear-gradient(180deg, #fbfcff 0%, #f3f4f6 100%);
+}
+
+.agent-page-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 56px 24px;
+}
+
+.agent-page-card {
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(31, 41, 55, 0.1);
+  border: 1px solid var(--color-E5E7EB);
+}
+
+.agent-page-title {
+  margin-bottom: 6px !important;
+}
+
+.agent-page-copy {
+  color: var(--color-4B5563);
+  margin-bottom: 14px !important;
+}
+
+.agent-page-meta {
+  color: var(--color-1F2937);
+  font-weight: 600;
+}
+
+.agent-page-actions {
+  margin-top: 18px;
+}
+
 @keyframes rise-in {
   0% {
     opacity: 0;
@@ -254,5 +303,9 @@
 
   .brand-title {
     font-size: 25px !important;
+  }
+
+  .agent-page-content {
+    padding: 28px 16px;
   }
 }

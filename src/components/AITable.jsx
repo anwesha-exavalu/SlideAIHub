@@ -1,6 +1,7 @@
 ﻿import { useMemo } from 'react';
 import { Avatar, Card, Space, Table, Tag } from 'antd';
 import { ApiOutlined, RobotOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import { tableClassNames } from './StyleComponent.js';
 import { agentRowsJson } from './agentRows.jsx';
 
@@ -20,10 +21,12 @@ function AITable() {
         title: 'Agent Name',
         dataIndex: 'agentName',
         key: 'agentName',
-        render: (value) => (
+        render: (value, record) => (
           <Space>
             <Avatar size="small" icon={<ApiOutlined />} className={tableClassNames.agentAvatar} />
-            <span>{value}</span>
+            <Link to={`/agent/${record.key}`} className={tableClassNames.agentNameLink}>
+              {value}
+            </Link>
           </Space>
         ),
       },
@@ -57,7 +60,6 @@ function AITable() {
           <span>Agent Directory</span>
         </Space>
       }
-      extra={<Tag color="blue">API integration later</Tag>}
     >
       <Table
         className={tableClassNames.table}

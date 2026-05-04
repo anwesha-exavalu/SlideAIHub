@@ -32,6 +32,17 @@ export const tableClassNames = {
   card: 'table-card',
   table: 'agent-table',
   agentAvatar: 'agent-avatar',
+  agentNameLink: 'agent-name-link',
+};
+
+export const agentPageClassNames = {
+  layout: 'agent-page-layout',
+  content: 'agent-page-content',
+  card: 'agent-page-card',
+  title: 'agent-page-title',
+  copy: 'agent-page-copy',
+  meta: 'agent-page-meta',
+  actions: 'agent-page-actions',
 };
 
 export const createLoginBackgroundStyle = (backgroundImage) => ({
