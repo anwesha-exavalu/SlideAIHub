@@ -7,10 +7,12 @@ import DashboardLayout from './components/layout.jsx';
 
 const USER_STORAGE_KEY = 'aihub-user';
 const LEGACY_USERNAME_KEY = 'aihub-username';
+const DEFAULT_DEPARTMENT = 'AI Engineering';
+const DEFAULT_ROLE = 'Admin';
 const EMPTY_USER_PROFILE = {
   username: '',
-  department: '',
-  role: '',
+  department: DEFAULT_DEPARTMENT,
+  role: DEFAULT_ROLE,
 };
 
 function readStoredUserProfile() {
@@ -26,8 +28,8 @@ function readStoredUserProfile() {
 
       return {
         username: parsedProfile.username?.trim?.() ?? '',
-        department: parsedProfile.department?.trim?.() ?? '',
-        role: parsedProfile.role?.trim?.() ?? '',
+        department: DEFAULT_DEPARTMENT,
+        role: DEFAULT_ROLE,
       };
     } catch {
       window.localStorage.removeItem(USER_STORAGE_KEY);
@@ -57,8 +59,8 @@ function AppRoutes() {
   const handleLogin = async (values) => {
     const nextUserProfile = {
       username: values.username.trim(),
-      department: values.department.trim(),
-      role: values.role.trim(),
+      department: DEFAULT_DEPARTMENT,
+      role: DEFAULT_ROLE,
     };
 
     if (!nextUserProfile.username) {

@@ -1,12 +1,5 @@
 import { Button, Card, Checkbox, Form, Input, Modal, Typography } from 'antd';
-import {
-  ApartmentOutlined,
-  IdcardOutlined,
-  LockOutlined,
-  LoginOutlined,
-  MailOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
+import { LockOutlined, LoginOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import backgroundImage from '../assets/ui/background.avif';
 import slideLogo from '../assets/ui/slide_logo.svg';
 import { createLoginBackgroundStyle, loginClassNames } from './StyleComponent.js';
@@ -47,28 +40,6 @@ function Login({
             ]}
           >
             <Input prefix={<UserOutlined />} placeholder="Enter username" autoComplete="username" />
-          </Form.Item>
-
-          <Form.Item
-            label="Department Name"
-            name="department"
-            rules={[
-              { required: true, message: 'Please enter your department name' },
-              { whitespace: true, message: 'Department name cannot be empty' },
-            ]}
-          >
-            <Input prefix={<ApartmentOutlined />} placeholder="Enter department name" autoComplete="organization" />
-          </Form.Item>
-
-          <Form.Item
-            label="Role"
-            name="role"
-            rules={[
-              { required: true, message: 'Please enter your role' },
-              { whitespace: true, message: 'Role cannot be empty' },
-            ]}
-          >
-            <Input prefix={<IdcardOutlined />} placeholder="Enter role" autoComplete="organization-title" />
           </Form.Item>
 
           <Form.Item

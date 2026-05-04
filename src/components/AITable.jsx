@@ -213,7 +213,7 @@ function AITable() {
         columns={columns}
         dataSource={mappedRows}
         pagination={{ pageSize: 6, hideOnSinglePage: true }}
-        scroll={{ x: 1180 }}
+        scroll={{ x: 1140 }}
         expandable={{
           expandedRowRender: renderExpandedRow,
           expandedRowKeys,
