@@ -1,4 +1,4 @@
-import {
+﻿import {
   ApartmentOutlined,
   LogoutOutlined,
   SafetyOutlined,
@@ -9,18 +9,18 @@ import { Button, Layout, Typography } from 'antd';
 import AITable from './AITable.jsx';
 import slideLogo from '../assets/ui/slide_logo.svg';
 import { layoutClassNames } from './StyleComponent.js';
-
+ 
 const { Header, Content } = Layout;
-
+ 
 const getProfileValue = (value) => value || 'Not set';
-
+ 
 function DashboardLayout({ userProfile, onLogout }) {
   const headerDetails = [
     { label: 'User Name', value: getProfileValue(userProfile.username), icon: UserOutlined },
     { label: 'Dept Name', value: getProfileValue(userProfile.department), icon: ApartmentOutlined },
     { label: 'Role', value: getProfileValue(userProfile.role), icon: SafetyOutlined },
   ];
-
+ 
   return (
     <Layout className={layoutClassNames.layout}>
       <Header className={layoutClassNames.header}>
@@ -28,7 +28,7 @@ function DashboardLayout({ userProfile, onLogout }) {
           <div className={layoutClassNames.brandMark}>
             <StarFilled className={layoutClassNames.brandMarkIcon} />
           </div>
-
+ 
           <div className={layoutClassNames.brandCopy}>
             <Typography.Title level={3} className={layoutClassNames.headerTitle}>
               AI Hub
@@ -36,12 +36,12 @@ function DashboardLayout({ userProfile, onLogout }) {
             <Typography.Text className={layoutClassNames.headerSubtitle}>Agent command center</Typography.Text>
           </div>
         </div>
-
+ 
         <div className={layoutClassNames.headerRight}>
           <div className={layoutClassNames.headerProfile}>
             {headerDetails.map((detail) => {
               const DetailIcon = detail.icon;
-
+ 
               return (
                 <div key={detail.label} className={layoutClassNames.headerProfileItem}>
                   <span className={layoutClassNames.headerProfileIcon}>
@@ -57,7 +57,7 @@ function DashboardLayout({ userProfile, onLogout }) {
               );
             })}
           </div>
-
+ 
           <div className={layoutClassNames.headerUtility}>
             <Button
               icon={<LogoutOutlined />}
@@ -66,17 +66,17 @@ function DashboardLayout({ userProfile, onLogout }) {
             >
               Logout
             </Button>
-
+ 
             <img src={slideLogo} alt="Slide logo" className={layoutClassNames.headerWordmark} />
           </div>
         </div>
       </Header>
-
+ 
       <Content className={layoutClassNames.content}>
         <AITable />
       </Content>
     </Layout>
   );
 }
-
+ 
 export default DashboardLayout;

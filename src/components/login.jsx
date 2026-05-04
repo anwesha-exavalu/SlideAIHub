@@ -3,7 +3,7 @@ import { LockOutlined, LoginOutlined, MailOutlined, UserOutlined } from '@ant-de
 import backgroundImage from '../assets/ui/background.avif';
 import slideLogo from '../assets/ui/slide_logo.svg';
 import { createLoginBackgroundStyle, loginClassNames } from './StyleComponent.js';
-
+ 
 function Login({
   loginForm,
   forgotForm,
@@ -29,7 +29,7 @@ function Login({
             </Typography.Text>
           </div>
         </div>
-
+ 
         <Form form={loginForm} layout="vertical" initialValues={{ remember: true }} onFinish={onLogin}>
           <Form.Item
             label="Username"
@@ -41,7 +41,7 @@ function Login({
           >
             <Input prefix={<UserOutlined />} placeholder="Enter username" autoComplete="username" />
           </Form.Item>
-
+ 
           <Form.Item
             label="Password"
             name="password"
@@ -53,17 +53,17 @@ function Login({
               autoComplete="current-password"
             />
           </Form.Item>
-
+ 
           <div className={loginClassNames.formHelperRow}>
             <Form.Item name="remember" valuePropName="checked" noStyle>
               <Checkbox>Remember me</Checkbox>
             </Form.Item>
-
+ 
             <Button type="link" className={loginClassNames.forgotLink} onClick={onOpenForgotModal}>
               Forgot password?
             </Button>
           </div>
-
+ 
           <Button
             type="primary"
             block
@@ -76,7 +76,7 @@ function Login({
           </Button>
         </Form>
       </Card>
-
+ 
       <Modal
         title="Reset Password"
         open={isForgotModalOpen}
@@ -87,7 +87,7 @@ function Login({
         <Typography.Paragraph className={loginClassNames.forgotCopy}>
           Enter your registered email. We will send reset instructions for now as a simple placeholder flow.
         </Typography.Paragraph>
-
+ 
         <Form form={forgotForm} layout="vertical" onFinish={onForgotPassword}>
           <Form.Item
             label="Registered Email"
@@ -99,7 +99,7 @@ function Login({
           >
             <Input prefix={<MailOutlined />} placeholder="name@company.com" autoComplete="email" />
           </Form.Item>
-
+ 
           <div className={loginClassNames.forgotActions}>
             <Button onClick={onCloseForgotModal}>Cancel</Button>
             <Button type="primary" htmlType="submit" loading={isForgotSubmitting}>
@@ -111,5 +111,5 @@ function Login({
     </div>
   );
 }
-
+ 
 export default Login;

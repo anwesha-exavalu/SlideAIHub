@@ -1,5 +1,5 @@
 ﻿import { useMemo, useState } from 'react';
-import { Avatar, Button, Card, Space, Table, Tag, Typography } from 'antd';
+import { Avatar, Card, Space, Table, Tag, Typography } from 'antd';
 import {
   EyeOutlined,
   RobotOutlined,
@@ -142,18 +142,18 @@ function AITable() {
           <span>Agent Directory</span>
         </Space>
       }
-      extra={
-        <Button type="primary" className={tableClassNames.registerButton}>
-          Register
-        </Button>
-      }
+      // extra={
+      //   <Button type="primary" className={tableClassNames.registerButton}>
+      //     Register
+      //   </Button>
+      // }
     >
       <Table
         className={tableClassNames.table}
         columns={columns}
         dataSource={mappedRows}
         pagination={{ pageSize: 6, hideOnSinglePage: true }}
-        scroll={{ x: 1140 }}
+        
         scroll={{ x: 1280 }}
         expandable={{
           expandedRowRender: renderExpandedRow,

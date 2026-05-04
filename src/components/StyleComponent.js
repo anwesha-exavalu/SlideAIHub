@@ -42,6 +42,7 @@ export const layoutClassNames = {
   welcomeCaption: 'welcome-caption',
   welcomeName: 'welcome-name',
 };
+ 
 
 export const tableClassNames = {
   card: 'table-card',
