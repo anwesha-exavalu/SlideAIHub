@@ -1,57 +1,13 @@
-import { useMemo, useState } from 'react';
-import { Avatar, Card, Space, Table, Tag, Typography } from 'antd';
+﻿import { useMemo, useState } from 'react';
+import { Avatar, Button, Card, Space, Table, Tag, Typography } from 'antd';
 import {
-  ApiOutlined,
-  AppstoreOutlined,
-  BarChartOutlined,
-  CalendarOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  DatabaseOutlined,
-  EnvironmentOutlined,
-  MessageOutlined,
+  EyeOutlined,
   RobotOutlined,
-  SafetyCertificateOutlined,
-  SearchOutlined,
-  TeamOutlined,
-  ToolOutlined,
-  UserOutlined,
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { tableClassNames } from './StyleComponent.js';
 import { agentRowsJson } from './agentRows.jsx';
-
-const CATEGORY_META_MAP = {
-  Automation: {
-    color: 'geekblue',
-    icon: ToolOutlined,
-  },
-  Analytics: {
-    color: 'cyan',
-    icon: BarChartOutlined,
-  },
-  'Knowledge Search': {
-    color: 'purple',
-    icon: SearchOutlined,
-  },
-  Compliance: {
-    color: 'magenta',
-    icon: SafetyCertificateOutlined,
-  },
-  Communication: {
-    color: 'gold',
-    icon: MessageOutlined,
-  },
-  'Quality Assurance': {
-    color: 'green',
-    icon: CheckCircleOutlined,
-  },
-};
-
-const DEFAULT_CATEGORY_META = {
-  color: 'default',
-  icon: AppstoreOutlined,
-};
+import copilotIcon from '../assets/ui/copiloticon.jpg';
 
 const STATUS_COLOR_MAP = {
   Active: 'success',
@@ -60,18 +16,21 @@ const STATUS_COLOR_MAP = {
   Ready: 'blue',
 };
 
-function AgentCategoryTag({ category }) {
-  const categoryMeta = CATEGORY_META_MAP[category] ?? DEFAULT_CATEGORY_META;
-  const CategoryIcon = categoryMeta.icon;
+function resolveAgentAvatar(agentName) {
+  const normalizedName = agentName.toLowerCase();
 
-  return (
-    <Tag color={categoryMeta.color} className={tableClassNames.categoryTag}>
-      <span className={tableClassNames.categoryIcon}>
-        <CategoryIcon />
-      </span>
-      <span>{category}</span>
-    </Tag>
-  );
+  if (normalizedName.includes('copilot')) {
+    return (
+      <Avatar
+        shape="square"
+        size="small"
+        src={<img src={copilotIcon} alt="Microsoft Copilot logo" />}
+        className={`${tableClassNames.agentAvatar} ${tableClassNames.agentAvatarCopilot}`}
+      />
+    );
+  }
+
+  return <Avatar size="small" className={tableClassNames.agentAvatar}>{agentName.charAt(0).toUpperCase()}</Avatar>;
 }
 
 function AITable() {
@@ -80,11 +39,6 @@ function AITable() {
     () => agentRowsJson.map((row, index) => ({ ...row, key: row.key ?? String(index + 1) })),
     [],
   );
-  const expandedRowKey = expandedRowKeys[0];
-
-  const toggleExpandedRow = (rowKey) => {
-    setExpandedRowKeys((currentKeys) => (currentKeys[0] === rowKey ? [] : [rowKey]));
-  };
 
   const columns = [
     {
@@ -92,25 +46,21 @@ function AITable() {
       dataIndex: 'agentName',
       key: 'agentName',
       render: (value, record) => (
-        <button
-          type="button"
+        <Link
+          to={`/agent/${record.key}`}
           className={tableClassNames.agentNameButton}
-          onClick={(event) => {
-            event.stopPropagation();
-            toggleExpandedRow(record.key);
-          }}
-          aria-expanded={expandedRowKey === record.key}
+          onClick={(event) => event.stopPropagation()}
         >
-          <Avatar size="small" icon={<ApiOutlined />} className={tableClassNames.agentAvatar} />
+          {resolveAgentAvatar(record.agentName)}
           <span className={tableClassNames.agentNameText}>{value}</span>
-        </button>
+        </Link>
       ),
     },
     {
       title: 'Category',
       dataIndex: 'category',
       key: 'category',
-      render: (value) => <AgentCategoryTag category={value} />,
+      render: (value) => <Typography.Text>{value}</Typography.Text>,
     },
     {
       title: 'Version',
@@ -118,7 +68,7 @@ function AITable() {
       key: 'version',
     },
     {
-      title: 'Specialization',
+      title: 'Short Description',
       dataIndex: 'specialization',
       key: 'specialization',
     },
@@ -132,66 +82,51 @@ function AITable() {
       dataIndex: 'creationDate',
       key: 'creationDate',
     },
+    {
+      title: 'Metrics',
+      key: 'metrics',
+      align: 'center',
+      render: (_, record) => (
+        <Link
+          to={`/metrics/${record.key}`}
+          className={tableClassNames.metricsViewButton}
+          onClick={(event) => event.stopPropagation()}
+          aria-label={`View metrics for ${record.agentName}`}
+        >
+          <EyeOutlined />
+        </Link>
+      ),
+    },
   ];
 
   const renderExpandedRow = (record) => {
-    const detailItems = [
-      { label: 'Owner Name', value: record.ownerName, icon: UserOutlined },
-      { label: 'Version', value: record.version, icon: ApiOutlined },
-      { label: 'Creation Date', value: record.creationDate, icon: CalendarOutlined },
-      { label: 'Last Updated', value: record.lastUpdated, icon: ClockCircleOutlined },
-      { label: 'Department', value: record.department, icon: TeamOutlined },
-      { label: 'Model', value: record.model, icon: ApiOutlined },
-      { label: 'Data Sources', value: record.dataSources, icon: DatabaseOutlined },
-      { label: 'Response SLA', value: record.responseSla, icon: CheckCircleOutlined },
-      { label: 'Region', value: record.region, icon: EnvironmentOutlined },
-    ];
-
     return (
       <div className={tableClassNames.agentDetailPanel}>
         <div className={tableClassNames.agentDetailHeader}>
           <div>
             <Typography.Text className={tableClassNames.agentDetailEyebrow}>
-              Agent snapshot
+              Agent description
             </Typography.Text>
             <Typography.Title level={5} className={tableClassNames.agentDetailTitle}>
               {record.agentName}
             </Typography.Title>
-            <div className={tableClassNames.agentDetailMeta}>
-              <AgentCategoryTag category={record.category} />
-              <Tag color={STATUS_COLOR_MAP[record.status] ?? 'default'}>{record.status}</Tag>
-            </div>
           </div>
-
-          <Link
-            to={`/agent/${record.key}`}
-            className={tableClassNames.agentDetailLink}
-            onClick={(event) => event.stopPropagation()}
-          >
-            Open full page
-          </Link>
+          <Tag color={STATUS_COLOR_MAP[record.status] ?? 'default'}>{record.status}</Tag>
         </div>
 
         <Typography.Paragraph className={tableClassNames.agentDetailCopy}>
           {record.description}
         </Typography.Paragraph>
-
-        <div className={tableClassNames.agentDetailGrid}>
-          {detailItems.map((item) => {
-            const DetailIcon = item.icon;
-
-            return (
-              <div key={item.label} className={tableClassNames.agentDetailItem}>
-                <Typography.Text className={tableClassNames.agentDetailItemLabel}>
-                  <DetailIcon />
-                  <span>{item.label}</span>
-                </Typography.Text>
-                <Typography.Text className={tableClassNames.agentDetailItemValue}>
-                  {item.value}
-                </Typography.Text>
-              </div>
-            );
-          })}
+        <div className={tableClassNames.agentDetailMeta}>
+          <Typography.Text className={tableClassNames.agentDetailMetaText}>
+            Owner: {record.ownerName}
+          </Typography.Text>
+          <Typography.Text className={tableClassNames.agentDetailMetaText}>
+            Created On: {record.creationDate}
+          </Typography.Text>
+          <Typography.Text className={tableClassNames.agentDetailMetaText}>
+            Version: {record.version}
+          </Typography.Text>
         </div>
       </div>
     );
@@ -207,22 +142,30 @@ function AITable() {
           <span>Agent Directory</span>
         </Space>
       }
+      extra={
+        <Button type="primary" className={tableClassNames.registerButton}>
+          Register
+        </Button>
+      }
     >
       <Table
         className={tableClassNames.table}
         columns={columns}
         dataSource={mappedRows}
         pagination={{ pageSize: 6, hideOnSinglePage: true }}
-        scroll={{ x: 1180 }}
+        scroll={{ x: 1280 }}
         expandable={{
           expandedRowRender: renderExpandedRow,
           expandedRowKeys,
-          showExpandColumn: false,
+          expandRowByClick: false,
+          showExpandColumn: true,
+          onExpand: (expanded, record) => {
+            setExpandedRowKeys(expanded ? [record.key] : []);
+          },
         }}
-        rowClassName={(record) => (record.key === expandedRowKey ? tableClassNames.agentRowActive : '')}
-        onRow={(record) => ({
-          onClick: () => toggleExpandedRow(record.key),
-        })}
+        rowClassName={(record) =>
+          expandedRowKeys.includes(record.key) ? tableClassNames.agentRowActive : ''
+        }
       />
     </Card>
   );

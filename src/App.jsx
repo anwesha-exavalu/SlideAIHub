@@ -3,6 +3,7 @@ import { App as AntdApp, ConfigProvider, Form, message } from 'antd';
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import AgentPlaceholderPage from './components/AgentPlaceholderPage.jsx';
 import Login from './components/login.jsx';
+import MetricsPage from './components/MetricsPage.jsx';
 import DashboardLayout from './components/layout.jsx';
 
 const USER_STORAGE_KEY = 'aihub-user';
@@ -145,6 +146,10 @@ function AppRoutes() {
         <Route
           path="/agent/:agentId"
           element={isAuthenticated ? <AgentPlaceholderPage /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/metrics/:agentId"
+          element={isAuthenticated ? <MetricsPage /> : <Navigate to="/" replace />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
