@@ -61,12 +61,14 @@ export const tableClassNames = {
   agentDetailEyebrow: 'agent-detail-eyebrow',
   agentDetailTitle: 'agent-detail-title',
   agentDetailMeta: 'agent-detail-meta',
+  agentDetailCategoryTag: 'agent-detail-category-tag',
   agentDetailMetaText: 'agent-detail-meta-text',
   agentDetailCopy: 'agent-detail-copy',
   agentDetailGrid: 'agent-detail-grid',
   agentDetailItem: 'agent-detail-item',
   agentDetailItemLabel: 'agent-detail-item-label',
   agentDetailItemValue: 'agent-detail-item-value',
+  agentDetailContactWrap: 'agent-detail-contact-wrap',
   agentDetailLink: 'agent-detail-link',
 };
 

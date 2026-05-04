@@ -432,12 +432,11 @@
 }
 
 .agent-detail-panel {
-  border: 1px solid rgba(224, 231, 255, 0.95);
-  border-radius: 18px;
-  padding: 18px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
-  box-shadow: 0 16px 34px rgba(31, 41, 55, 0.08);
+  border: 1px solid rgba(214, 222, 236, 0.95);
+  border-radius: 24px;
+  padding: 20px 24px 22px;
+  background: #f8fafc;
+  box-shadow: none;
 }
 
 .agent-detail-header {
@@ -464,6 +463,19 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 2px;
+}
+
+.agent-detail-category-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0 !important;
+  border-radius: 999px;
+  background: #e7edff !important;
+  color: #2748c4 !important;
+  font-weight: 600;
+  padding-inline: 12px;
 }
 
 .agent-detail-meta-text {
@@ -472,22 +484,24 @@
 }
 
 .agent-detail-copy {
-  margin: 14px 0 18px !important;
+  margin: 16px 0 20px !important;
   color: var(--color-4B5563);
-  max-width: 820px;
+  max-width: 1000px;
+  font-size: 16px;
+  line-height: 1.4;
 }
 
 .agent-detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
 }
 
 .agent-detail-item {
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid var(--color-E5E7EB);
-  background: rgba(255, 255, 255, 0.96);
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid #d8dee9;
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .agent-detail-item-label {
@@ -495,15 +509,16 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: var(--color-6B7280) !important;
+  color: #6a7486 !important;
 }
 
 .agent-detail-item-value {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--color-1F2937) !important;
   font-weight: 600;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.3;
 }
 
 .agent-detail-link {
@@ -511,6 +526,7 @@
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
+  font-size: 16px;
 }
 
 .agent-detail-link:hover {

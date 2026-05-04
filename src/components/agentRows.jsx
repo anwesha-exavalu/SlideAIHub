@@ -14,6 +14,8 @@ export const agentRowsJson = [
     dataSources: 'FNOL inbox, claim documents',
     responseSla: '6 sec average',
     region: 'Sweden Central',
+    contactEmail: 'michael.carter@slideaihub.com',
+    contactPhone: '+46 8 5550 1201',
     description:
       'Automates first-pass claim sorting, identifies missing documents, and sends the case to the right adjuster queue.',
   },
@@ -32,6 +34,8 @@ export const agentRowsJson = [
     dataSources: 'Policy library, endorsement notes',
     responseSla: '9 sec average',
     region: 'Sweden Central',
+    contactEmail: 'emily.johnson@slideaihub.com',
+    contactPhone: '+46 8 5550 1202',
     description:
       'Surfaces policy language, compares endorsements, and prepares quick clause summaries for support and underwriting teams.',
   },
@@ -50,6 +54,8 @@ export const agentRowsJson = [
     dataSources: 'Claims history, investigation flags',
     responseSla: '11 sec average',
     region: 'Sweden Central',
+    contactEmail: 'daniel.brooks@slideaihub.com',
+    contactPhone: '+46 8 5550 1203',
     description:
       'Highlights suspicious clusters, explains risk signals, and supports reviewers with a compact fraud-risk snapshot.',
   },
@@ -68,6 +74,8 @@ export const agentRowsJson = [
     dataSources: 'Regulatory memos, controls register',
     responseSla: '7 sec average',
     region: 'Sweden Central',
+    contactEmail: 'olivia.bennett@slideaihub.com',
+    contactPhone: '+46 8 5550 1204',
     description:
       'Checks workflows against policy controls and jurisdiction rules, then flags gaps before a case is finalized.',
   },
@@ -86,6 +94,8 @@ export const agentRowsJson = [
     dataSources: 'CRM notes, email templates',
     responseSla: '5 sec average',
     region: 'Sweden Central',
+    contactEmail: 'sophia.turner@slideaihub.com',
+    contactPhone: '+46 8 5550 1205',
     description:
       'Drafts broker updates, follow-up nudges, and summary responses using approved tone and communication guardrails.',
   },
@@ -104,6 +114,8 @@ export const agentRowsJson = [
     dataSources: 'Submission forms, validation rules',
     responseSla: '4 sec average',
     region: 'Sweden Central',
+    contactEmail: 'jackson.reed@slideaihub.com',
+    contactPhone: '+46 8 5550 1206',
     description:
       'Validates structured inputs, catches missing or conflicting values, and recommends corrections before submission.',
   },
