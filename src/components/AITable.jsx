@@ -23,7 +23,7 @@ import complianceIcon from '../assets/ui/agent-icons/compliance.svg';
 import defaultIcon from '../assets/ui/agent-icons/default.svg';
 import documentIcon from '../assets/ui/agent-icons/software-agent.png';
 import qualityIcon from '../assets/ui/agent-icons/robot.png';
-import searchIcon from '../assets/ui/agent-icons/search.svg';
+import searchIcon from '../assets/ui/agent-icons/copiloticon.jpg';
 
 const STATUS_COLOR_MAP = {
   Active: 'success',
@@ -69,7 +69,7 @@ function resolveAgentAvatar(agentName) {
 
   return (
     <Avatar
-      size={38}
+      size={80}
       src={<img src={agentImage} alt={`${agentName} icon`} />}
       className={tableClassNames.agentAvatar}
     />
@@ -121,7 +121,7 @@ function AITable() {
         className={tableClassNames.agentList}
         dataSource={filteredRows}
         pagination={{ pageSize: 6, hideOnSinglePage: true }}
-        grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 2, xxl: 2 }}
+        grid={{ gutter: 14, xs: 1, sm: 1, md: 2, lg: 3, xl: 3, xxl: 3 }}
         renderItem={(record) => {
           const CategoryIcon = CATEGORY_ICON_MAP[record.category] ?? ToolOutlined;
           const rating = AGENT_RATING_MAP[record.key] ?? 4.5;
@@ -194,6 +194,10 @@ function AITable() {
                 </div>
 
                 <div className={tableClassNames.agentCardDescriptionSection}>
+                   <Tag className={tableClassNames.agentDepartmentTag}>
+                     
+                        <span>Dept: {record.department}</span>
+                      </Tag>
                   <div className={tableClassNames.agentCardDescriptionHeader}>
                     <div className={tableClassNames.agentCardDescriptionHeadingWrap}>
                       <Typography.Text className={tableClassNames.agentCardDescriptionLabel}>
@@ -209,10 +213,7 @@ function AITable() {
                           <InfoCircleOutlined />
                         </button>
                       </Tooltip>
-                      <Tag className={tableClassNames.agentDepartmentTag}>
-                     
-                        <span>Dept: {record.department}</span>
-                      </Tag>
+                    
                      
                     </div>
                   </div>
@@ -221,6 +222,7 @@ function AITable() {
                     {record.specialization}
                   </Typography.Text>
                 </div>
+                 
               </Card>
             </List.Item>
           );

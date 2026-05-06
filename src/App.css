@@ -372,12 +372,13 @@
   display: flex;
   justify-content: center;
   padding-top: 0 !important;
-  padding-bottom: 16px !important;
+  padding-bottom: 14px !important;
 }
 
 .agent-card {
-  width: min(100%, 470px);
+  width: 100%;
   height: 100%;
+  min-height: 300px;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--color-E5E7EB);
@@ -399,15 +400,17 @@
 
 .agent-card-title-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .agent-version-inline-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  align-self: flex-start;
+  gap: 1px;
   margin-inline-end: 0 !important;
   border-radius: 999px;
   border: 1px solid rgba(72, 52, 153, 0.2) !important;
@@ -415,8 +418,8 @@
   color: #2f415a !important;
   font-weight: 600;
   font-size: 12px;
-  line-height: 1;
-  padding-inline: 8px;
+  line-height: 0;
+  padding-inline: 4px;
 }
 
 .agent-rating-pill {
@@ -447,6 +450,9 @@
 
 .agent-card .ant-card-body {
   padding: 14px 14px 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   position: relative;
   z-index: 1;
 }
@@ -517,7 +523,8 @@
 }
 
 .agent-card-description-section {
-  margin-top: 12px;
+  margin-top: auto;
+  padding-top: 12px;
 }
 
 .agent-card-description-header {
@@ -538,6 +545,7 @@
 .agent-card-description-label {
   color: var(--color-1F2937) !important;
   font-weight: 600;
+  margin-top: 10px;
 }
 
 .agent-department-tag {
@@ -573,6 +581,7 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+   margin-top: 10px;
 }
 
 .agent-info-button:hover {
@@ -594,7 +603,9 @@
 
 .agent-name-button {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -603,6 +614,12 @@
 }
 
 .agent-name-text {
+  display: block;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-break: break-word;
+  line-height: 1.2;
   color: var(--color-483499);
   font-weight: 600;
   font-size: 15px;
@@ -979,8 +996,8 @@
   }
 
   .metrics-view-button {
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
   }
 
   .agent-detail-panel {
