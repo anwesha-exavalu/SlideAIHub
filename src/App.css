@@ -10,6 +10,12 @@
   overflow: hidden;
 }
 
+.ant-card {
+  /* background: #9CA3AF !important; */
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.12) !important;
+}
+
+
 .login-screen::before,
 .login-screen::after {
   content: '';
@@ -293,11 +299,11 @@
   justify-content: space-between;
   align-items: center;
   gap: 14px;
-  background: var(--color-FFFFFF);
+  background: #9CA3AF;
   border: 1px solid var(--color-E5E7EB);
   border-radius: 20px;
   padding: 18px 24px;
-  box-shadow: 0 16px 35px rgba(72, 52, 153, 0.08);
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.12);
   margin-bottom: 18px;
   animation: rise-in 0.5s 0.07s ease both;
 }
@@ -343,10 +349,10 @@
 
 .agent-card {
   height: 100%;
-  border: 1px solid rgba(214, 222, 236, 0.92);
+  border: 1px solid var(--color-E5E7EB);
   border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(31, 41, 55, 0.06);
-  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%);
+  box-shadow: 0 8px 20px #1F29371A, 0 8px 20px #48349912 !important;
+  background: linear-gradient(180deg, var(--color-F3F4F6) 0%, var(--color-E0E7FF) 100%) !important;
 }
 
 .agent-card .ant-card-body {
