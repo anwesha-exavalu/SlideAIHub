@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { Avatar, Card, List, Space, Tag, Tooltip, Typography } from 'antd';
 import {
   ApiOutlined,
@@ -10,8 +10,9 @@ import {
   LineChartOutlined,
   LinkOutlined,
   MessageOutlined,
-  PhoneOutlined,
+
   RobotOutlined,
+  SafetyCertificateOutlined,
   SafetyOutlined,
   SearchOutlined,
   TeamOutlined,
@@ -34,8 +35,8 @@ const CATEGORY_ICON_MAP = {
   'Knowledge Search': LinkOutlined,
   Analytics: LineChartOutlined,
   Compliance: TeamOutlined,
-  Communication: PhoneOutlined,
-  'Quality Assurance': ApiOutlined,
+  Communication: MessageOutlined,
+  'Quality Assurance': SafetyCertificateOutlined,
 };
 
 const AGENT_ICON_RULES = [
