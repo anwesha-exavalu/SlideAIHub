@@ -328,52 +328,157 @@
   border-bottom: 1px solid var(--color-E5E7EB);
 }
 
-.agent-table .ant-table-thead>tr>th {
-  color: var(--color-4B5563);
+.agent-list .ant-list-items {
+  margin-top: 4px;
+}
+
+.agent-list .ant-list-pagination {
+  margin-top: 8px;
+}
+
+.agent-list .ant-list-item {
+  padding-top: 0 !important;
+  padding-bottom: 16px !important;
+}
+
+.agent-card {
+  height: 100%;
+  border: 1px solid rgba(214, 222, 236, 0.92);
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(31, 41, 55, 0.06);
+  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%);
+}
+
+.agent-card .ant-card-body {
+  padding: 18px 18px 16px;
+}
+
+.agent-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.agent-card-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.agent-card-copy {
+  min-width: 0;
+}
+
+.agent-card-contact {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--color-6B7280) !important;
+  font-size: 13px;
+}
+
+.agent-card-contact-divider {
+  opacity: 0.5;
   font-weight: 600;
-  letter-spacing: 0.15px;
 }
 
-.agent-table .ant-table-tbody>tr>td {
-  color: var(--color-1F2937);
+.agent-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.agent-table .ant-table-tbody>tr:hover>td {
-  background: var(--color-E8F8F0) !important;
+.agent-version-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid #d8deeb !important;
+  color: #2f415a !important;
+  background: #f4f7fc !important;
+  font-weight: 600;
 }
 
-.agent-table .ant-table-tbody>tr.agent-row-active>td {
-  background: rgba(232, 248, 240, 0.82) !important;
+.agent-date-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid #d8deeb !important;
+  color: #2f415a !important;
+  background: #f4f7fc !important;
+  font-weight: 500;
 }
 
-.agent-table .ant-table-expanded-row>td {
-  background: transparent !important;
-  padding: 8px 18px 18px !important;
+.agent-card-description-section {
+  margin-top: 12px;
 }
 
-.agent-table .ant-table-expanded-row:hover>td {
-  background: transparent !important;
+.agent-card-description-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.agent-card-description-label {
+  color: var(--color-1F2937) !important;
+  font-weight: 600;
+}
+
+.agent-card-description {
+  color: var(--color-4B5563) !important;
+  line-height: 1.45;
+  display: block;
+}
+
+.agent-info-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-E5E7EB);
+  background: rgba(255, 255, 255, 0.94);
+  color: #5a6578;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.agent-info-button:hover {
+  color: var(--color-483499);
+  border-color: rgba(102, 72, 220, 0.32);
+  background: rgba(224, 231, 255, 0.58);
 }
 
 .agent-avatar {
-  background: var(--color-E0E7FF) !important;
+  background: #e7eeff !important;
   color: var(--color-483499) !important;
+  border: 1px solid rgba(102, 72, 220, 0.16);
 }
 
 .agent-avatar-copilot {
   background: transparent !important;
-  border-radius: 8px !important;
+  border-radius: 50% !important;
+  overflow: hidden;
 }
 
 .agent-avatar-copilot img {
-  object-fit: contain;
-  padding: 0;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
 
 .agent-name-button {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -397,12 +502,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 10px;
   border: 1px solid var(--color-E5E7EB);
   background: rgba(255, 255, 255, 0.9);
   color: var(--color-483499);
+  flex-shrink: 0;
 }
 
 .metrics-view-button:hover {
@@ -647,8 +753,21 @@
     font-size: 23px;
   }
 
-  .agent-table .ant-table-expanded-row > td {
-    padding: 8px 12px 14px !important;
+  .agent-card .ant-card-body {
+    padding: 14px;
+  }
+
+  .agent-card-header {
+    margin-bottom: 10px;
+  }
+
+  .agent-card-contact {
+    font-size: 12px;
+  }
+
+  .metrics-view-button {
+    width: 32px;
+    height: 32px;
   }
 
   .agent-detail-panel {

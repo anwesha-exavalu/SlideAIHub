@@ -1,19 +1,21 @@
-﻿import { useMemo, useState } from 'react';
-import { Avatar, Card, Space, Table, Tag, Typography } from 'antd';
+import { useMemo } from 'react';
+import { Avatar, Card, List, Space, Tag, Tooltip, Typography } from 'antd';
 import {
   ApiOutlined,
   CalendarOutlined,
-  ClockCircleOutlined,
   DatabaseOutlined,
-  EnvironmentOutlined,
   EyeOutlined,
+  FileTextOutlined,
+  InfoCircleOutlined,
+  LineChartOutlined,
   LinkOutlined,
-  MailOutlined,
+  MessageOutlined,
   PhoneOutlined,
   RobotOutlined,
+  SafetyOutlined,
+  SearchOutlined,
   TeamOutlined,
   ToolOutlined,
-  UserOutlined,
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { tableClassNames } from './StyleComponent.js';
@@ -30,11 +32,20 @@ const STATUS_COLOR_MAP = {
 const CATEGORY_ICON_MAP = {
   Automation: ToolOutlined,
   'Knowledge Search': LinkOutlined,
-  Analytics: ApiOutlined,
+  Analytics: LineChartOutlined,
   Compliance: TeamOutlined,
   Communication: PhoneOutlined,
   'Quality Assurance': ApiOutlined,
 };
+
+const AGENT_ICON_RULES = [
+  { keywords: ['search', 'knowledge', 'insight'], icon: SearchOutlined },
+  { keywords: ['fraud', 'signal', 'analyst', 'analytics'], icon: LineChartOutlined },
+  { keywords: ['regulation', 'compliance', 'guard'], icon: SafetyOutlined },
+  { keywords: ['broker', 'communicator', 'communication'], icon: MessageOutlined },
+  { keywords: ['quality', 'data', 'sentinel'], icon: DatabaseOutlined },
+  { keywords: ['claim', 'policy'], icon: FileTextOutlined },
+];
 
 function resolveAgentAvatar(agentName) {
   const normalizedName = agentName.toLowerCase();
@@ -42,151 +53,27 @@ function resolveAgentAvatar(agentName) {
   if (normalizedName.includes('copilot')) {
     return (
       <Avatar
-        shape="square"
-        size="small"
+        size={44}
         src={<img src={copilotIcon} alt="Microsoft Copilot logo" />}
         className={`${tableClassNames.agentAvatar} ${tableClassNames.agentAvatarCopilot}`}
       />
     );
   }
 
-  return (
-    <Avatar size="small" className={tableClassNames.agentAvatar}>
-      {agentName.charAt(0).toUpperCase()}
-    </Avatar>
-  );
+  const iconRule =
+    AGENT_ICON_RULES.find((rule) =>
+      rule.keywords.some((keyword) => normalizedName.includes(keyword)),
+    ) ?? null;
+  const AgentIcon = iconRule?.icon ?? RobotOutlined;
+
+  return <Avatar size={44} className={tableClassNames.agentAvatar} icon={<AgentIcon />} />;
 }
 
 function AITable() {
-  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const mappedRows = useMemo(
     () => agentRowsJson.map((row, index) => ({ ...row, key: row.key ?? String(index + 1) })),
     [],
   );
-
-  const columns = [
-    {
-      title: 'Agent Name',
-      dataIndex: 'agentName',
-      key: 'agentName',
-      render: (value, record) => (
-        <Link
-          to={`/agent/${record.key}`}
-          className={tableClassNames.agentNameButton}
-          onClick={(event) => event.stopPropagation()}
-        >
-          {resolveAgentAvatar(record.agentName)}
-          <span className={tableClassNames.agentNameText}>{value}</span>
-        </Link>
-      ),
-    },
-    {
-      title: 'Category',
-      dataIndex: 'category',
-      key: 'category',
-      render: (value) => <Typography.Text>{value}</Typography.Text>,
-    },
-    {
-      title: 'Version',
-      dataIndex: 'version',
-      key: 'version',
-    },
-    {
-      title: 'Short Description',
-      dataIndex: 'specialization',
-      key: 'specialization',
-    },
-    {
-      title: 'Owner Name',
-      dataIndex: 'ownerName',
-      key: 'ownerName',
-    },
-    {
-      title: 'Created On',
-      dataIndex: 'creationDate',
-      key: 'creationDate',
-    },
-    {
-      title: 'Metrics',
-      key: 'metrics',
-      align: 'center',
-      render: (_, record) => (
-        <Link
-          to={`/metrics/${record.key}`}
-          className={tableClassNames.metricsViewButton}
-          onClick={(event) => event.stopPropagation()}
-          aria-label={`View metrics for ${record.agentName}`}
-        >
-          <EyeOutlined />
-        </Link>
-      ),
-    },
-  ];
-
-  const renderExpandedRow = (record) => {
-    const CategoryIcon = CATEGORY_ICON_MAP[record.category] ?? ToolOutlined;
-    const detailItems = [
-      { label: 'Owner Name', value: record.ownerName, icon: UserOutlined },
-      { label: 'Version', value: record.version, icon: ApiOutlined },
-      { label: 'Creation Date', value: record.creationDate, icon: CalendarOutlined },
-      { label: 'Last Updated', value: record.lastUpdated, icon: ClockCircleOutlined },
-      { label: 'Department', value: record.department, icon: TeamOutlined },
-      { label: 'Model', value: record.model, icon: ApiOutlined },
-      { label: 'Data Sources', value: record.dataSources, icon: DatabaseOutlined },
-      { label: 'Region', value: record.region, icon: EnvironmentOutlined },
-      { label: 'Contact Email', value: record.contactEmail, icon: MailOutlined },
-      { label: 'Contact Phone', value: record.contactPhone, icon: PhoneOutlined },
-    ];
-
-    return (
-      <div className={tableClassNames.agentDetailPanel}>
-        <div className={tableClassNames.agentDetailHeader}>
-          <div>
-            <Typography.Text className={tableClassNames.agentDetailEyebrow}>
-              Agent description
-            </Typography.Text>
-            <Typography.Title level={5} className={tableClassNames.agentDetailTitle}>
-              {record.agentName}
-            </Typography.Title>
-            <div className={tableClassNames.agentDetailMeta}>
-              <Tag className={tableClassNames.agentDetailCategoryTag}>
-                <CategoryIcon />
-                <span>{record.category}</span>
-              </Tag>
-              <Tag color={STATUS_COLOR_MAP[record.status] ?? 'default'}>{record.status}</Tag>
-            </div>
-          </div>
-          {/* <Link
-            to={`/agent/${record.key}`}
-            className={tableClassNames.agentDetailLink}
-            onClick={(event) => event.stopPropagation()}
-          >
-            Open full page
-          </Link> */}
-        </div>
-
-        <Typography.Paragraph className={tableClassNames.agentDetailCopy}>
-          {record.description}
-        </Typography.Paragraph>
-
-        <div className={tableClassNames.agentDetailGrid}>
-          {detailItems.map((item) => {
-            const DetailIcon = item.icon;
-
-            return (
-              <div key={item.label} className={tableClassNames.agentDetailItem}>
-                <Typography.Text className={tableClassNames.agentDetailItemLabel}>
-                  <DetailIcon />
-                  <span>{item.label}</span>
-                </Typography.Text>
-                <Typography.Text className={tableClassNames.agentDetailItemValue}>{item.value}</Typography.Text>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <Card
@@ -199,24 +86,92 @@ function AITable() {
         </Space>
       }
     >
-      <Table
-        className={tableClassNames.table}
-        columns={columns}
+      <List
+        className={tableClassNames.agentList}
         dataSource={mappedRows}
         pagination={{ pageSize: 6, hideOnSinglePage: true }}
-        scroll={{ x: 1280 }}
-        expandable={{
-          expandedRowRender: renderExpandedRow,
-          expandedRowKeys,
-          expandRowByClick: false,
-          showExpandColumn: true,
-          onExpand: (expanded, record) => {
-            setExpandedRowKeys(expanded ? [record.key] : []);
-          },
+        grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 2, xxl: 2 }}
+        renderItem={(record) => {
+          const CategoryIcon = CATEGORY_ICON_MAP[record.category] ?? ToolOutlined;
+
+          return (
+            <List.Item>
+              <Card className={tableClassNames.agentCard} bordered={false}>
+                <div className={tableClassNames.agentCardHeader}>
+                  <div className={tableClassNames.agentCardIdentity}>
+                    {resolveAgentAvatar(record.agentName)}
+
+                    <div className={tableClassNames.agentCardCopy}>
+                      <Link
+                        to={`/agent/${record.key}`}
+                        className={tableClassNames.agentNameButton}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <span className={tableClassNames.agentNameText}>{record.agentName}</span>
+                      </Link>
+
+                      <Typography.Text className={tableClassNames.agentCardContact}>
+                        <span>{record.ownerName}</span>
+                        <span className={tableClassNames.agentCardContactDivider}>|</span>
+                        <span>{record.contactEmail}</span>
+                      </Typography.Text>
+                    </div>
+                  </div>
+
+                  <Tooltip title="Metrics">
+                    <Link
+                      to={`/metrics/${record.key}`}
+                      className={tableClassNames.metricsViewButton}
+                      onClick={(event) => event.stopPropagation()}
+                      aria-label={`View metrics for ${record.agentName}`}
+                    >
+                      <EyeOutlined />
+                    </Link>
+                  </Tooltip>
+                </div>
+
+                <div className={tableClassNames.agentCardBadges}>
+                  <Tag className={tableClassNames.agentVersionTag}>
+                    <ApiOutlined />
+                    <span>{record.version}</span>
+                  </Tag>
+                  <Tag className={tableClassNames.categoryTag}>
+                    <CategoryIcon className={tableClassNames.categoryIcon} />
+                    <span>{record.category}</span>
+                  </Tag>
+                  <Tag color={STATUS_COLOR_MAP[record.status] ?? 'default'}>{record.status}</Tag>
+                  <Tag className={tableClassNames.agentDateTag}>
+                    <CalendarOutlined />
+                    <span>{record.creationDate}</span>
+                  </Tag>
+                </div>
+
+                <div className={tableClassNames.agentCardDescriptionSection}>
+                  <div className={tableClassNames.agentCardDescriptionHeader}>
+                    <Typography.Text className={tableClassNames.agentCardDescriptionLabel}>
+                      Description
+                    </Typography.Text>
+
+                    <Tooltip title={record.description} placement="bottomRight">
+                      <button
+                        type="button"
+                        className={tableClassNames.agentInfoButton}
+                        aria-label={`View brief description for ${record.agentName}`}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <InfoCircleOutlined />
+                      </button>
+                    </Tooltip>
+                  </div>
+
+                  <Typography.Text className={tableClassNames.agentCardDescription}>
+                    {record.specialization}
+                  </Typography.Text>
+                </div>
+              </Card>
+            </List.Item>
+          );
         }}
-        rowClassName={(record) =>
-          expandedRowKeys.includes(record.key) ? tableClassNames.agentRowActive : ''
-        }
       />
     </Card>
   );
