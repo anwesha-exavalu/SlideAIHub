@@ -2,11 +2,11 @@
   ApartmentOutlined,
   LogoutOutlined,
   SafetyOutlined,
-  StarFilled,
   UserOutlined,
 } from '@ant-design/icons';
 import { Button, Layout, Typography } from 'antd';
 import AITable from './AITable.jsx';
+import hubMark from '../assets/ui/agent-icons/ai.png';
 import slideLogo from '../assets/ui/slide_logo.svg';
 import { layoutClassNames } from './StyleComponent.js';
  
@@ -26,7 +26,7 @@ function DashboardLayout({ userProfile, onLogout }) {
       <Header className={layoutClassNames.header}>
         <div className={layoutClassNames.brandMini}>
           <div className={layoutClassNames.brandMark}>
-            <StarFilled className={layoutClassNames.brandMarkIcon} />
+            <img src={hubMark} alt="AI Hub mark" className={layoutClassNames.brandMarkImage} />
           </div>
  
           <div className={layoutClassNames.brandCopy}>

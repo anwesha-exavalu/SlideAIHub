@@ -171,6 +171,11 @@
   font-size: 26px;
 }
 
+.brand-mark-image {
+  width: 44px;
+  height: 44px;
+}
+
 .brand-copy {
   min-width: 0;
 }
@@ -334,6 +339,27 @@
   border-bottom: 1px solid var(--color-E5E7EB);
 }
 
+.table-card .ant-card-head-wrapper {
+  gap: 14px;
+  align-items: center;
+}
+
+.agent-search-input {
+  width: clamp(210px, 30vw, 340px);
+  border-radius: 999px !important;
+  border: 1px solid rgba(102, 72, 220, 0.22) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(235, 240, 255, 0.9)) !important;
+  box-shadow: 0 8px 16px rgba(72, 52, 153, 0.08);
+}
+
+.agent-search-input .ant-input {
+  background: transparent !important;
+}
+
+.agent-search-input-icon {
+  color: #6c7690;
+}
+
 .agent-list .ant-list-items {
   margin-top: 4px;
 }
@@ -343,20 +369,86 @@
 }
 
 .agent-list .ant-list-item {
+  display: flex;
+  justify-content: center;
   padding-top: 0 !important;
   padding-bottom: 16px !important;
 }
 
 .agent-card {
+  width: min(100%, 470px);
   height: 100%;
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--color-E5E7EB);
   border-radius: 18px;
-  box-shadow: 0 8px 20px #1F29371A, 0 8px 20px #48349912 !important;
-  background: linear-gradient(180deg, var(--color-F3F4F6) 0%, var(--color-E0E7FF) 100%) !important;
+  box-shadow: 0 10px 24px rgba(31, 41, 55, 0.14), 0 6px 14px rgba(72, 52, 153, 0.12) !important;
+  background:
+    radial-gradient(circle at 88% -10%, rgba(102, 72, 220, 0.34), transparent 40%),
+    radial-gradient(circle at 0% 125%, rgba(72, 52, 153, 0.2), transparent 45%),
+    linear-gradient(165deg, #f9fbff 0%, #ebf0ff 58%, #dde6ff 100%) !important;
+}
+
+.agent-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+}
+
+.agent-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.agent-version-inline-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-end: 0 !important;
+  border-radius: 999px;
+  border: 1px solid rgba(72, 52, 153, 0.2) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #2f415a !important;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1;
+  padding-inline: 8px;
+}
+
+.agent-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 158, 11, 0.36);
+  background: rgba(255, 251, 235, 0.86);
+  padding: 1px 8px;
+}
+
+.agent-rating-stars {
+  font-size: 12px !important;
+  color: #f59e0b !important;
+  line-height: 1;
+}
+
+.agent-rating-stars .ant-rate-star {
+  margin-inline-end: 3px !important;
+}
+
+.agent-rating-value {
+  color: #8a4b00 !important;
+  font-weight: 700;
+  font-size: 12px;
 }
 
 .agent-card .ant-card-body {
-  padding: 18px 18px 16px;
+  padding: 14px 14px 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .agent-card-header {
@@ -376,6 +468,7 @@
 
 .agent-card-copy {
   min-width: 0;
+  max-width: 100%;
 }
 
 .agent-card-contact {
@@ -385,7 +478,7 @@
   flex-wrap: wrap;
   gap: 6px;
   color: var(--color-6B7280) !important;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .agent-card-contact-divider {
@@ -396,7 +489,7 @@
 .agent-card-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .agent-version-tag {
@@ -413,12 +506,14 @@
 .agent-date-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   border-radius: 999px;
   border: 1px solid #d8deeb !important;
   color: #2f415a !important;
   background: #f4f7fc !important;
   font-weight: 500;
+  font-size: 12px;
+  padding-inline: 8px;
 }
 
 .agent-card-description-section {
@@ -433,20 +528,42 @@
   margin-bottom: 6px;
 }
 
+.agent-card-description-heading-wrap {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .agent-card-description-label {
   color: var(--color-1F2937) !important;
   font-weight: 600;
 }
 
+.agent-department-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-end: 0 !important;
+  border-radius: 999px;
+  border: 1px solid rgba(72, 52, 153, 0.22) !important;
+  color: #244069 !important;
+  background: rgba(231, 237, 255, 0.88) !important;
+  font-weight: 600;
+  font-size: 12px;
+  padding-inline: 8px;
+}
+
 .agent-card-description {
   color: var(--color-4B5563) !important;
-  line-height: 1.45;
+  line-height: 1.35;
   display: block;
+  font-size: 13px;
 }
 
 .agent-info-button {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 1px solid var(--color-E5E7EB);
   background: rgba(255, 255, 255, 0.94);
@@ -465,18 +582,11 @@
 }
 
 .agent-avatar {
-  background: #e7eeff !important;
-  color: var(--color-483499) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
   border: 1px solid rgba(102, 72, 220, 0.16);
 }
 
-.agent-avatar-copilot {
-  background: transparent !important;
-  border-radius: 50% !important;
-  overflow: hidden;
-}
-
-.agent-avatar-copilot img {
+.agent-avatar img {
   object-fit: cover;
   width: 100%;
   height: 100%;
@@ -495,6 +605,7 @@
 .agent-name-text {
   color: var(--color-483499);
   font-weight: 600;
+  font-size: 15px;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
@@ -508,8 +619,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 10px;
   border: 1px solid var(--color-E5E7EB);
   background: rgba(255, 255, 255, 0.9);
@@ -531,10 +642,11 @@
 .category-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   border-radius: 999px;
   font-weight: 600;
-  padding-inline: 10px;
+  font-size: 12px;
+  padding-inline: 8px;
 }
 
 .category-icon {
@@ -678,6 +790,72 @@
   font-weight: 600;
 }
 
+.agent-page-live-section {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.agent-page-loader-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(102, 72, 220, 0.2);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.74), rgba(224, 231, 255, 0.68));
+  width: fit-content;
+}
+
+.agent-page-loader-orb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  position: relative;
+  background: conic-gradient(var(--color-6648DC), var(--color-E0E7FF), var(--color-483499));
+  animation: spin-orb 0.95s linear infinite;
+}
+
+.agent-page-loader-orb::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #f6f8ff;
+}
+
+.agent-page-loader-text {
+  color: var(--color-4B5563) !important;
+  font-weight: 600;
+}
+
+.agent-page-response-label {
+  color: var(--color-1F2937) !important;
+  font-weight: 700;
+}
+
+.agent-page-response-card {
+  border: 1px solid rgba(72, 52, 153, 0.2);
+  border-radius: 14px;
+  padding: 12px;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.82), rgba(231, 237, 255, 0.72));
+}
+
+.agent-page-response-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-1F2937);
+  font-family: 'Poppins', 'Trebuchet MS', sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.agent-page-error-text {
+  color: #b42318 !important;
+  font-weight: 600;
+}
+
 .agent-page-actions {
   margin-top: 18px;
 }
@@ -691,6 +869,16 @@
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes spin-orb {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
   }
 }
 
@@ -759,12 +947,31 @@
     font-size: 23px;
   }
 
+  .brand-mark-image {
+    width: 30px;
+    height: 30px;
+  }
+
+  .table-card .ant-card-head-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .agent-search-input {
+    width: 100%;
+  }
+
   .agent-card .ant-card-body {
-    padding: 14px;
+    padding: 12px;
   }
 
   .agent-card-header {
     margin-bottom: 10px;
+  }
+
+  .agent-card-title-row {
+    gap: 6px;
   }
 
   .agent-card-contact {
@@ -772,8 +979,8 @@
   }
 
   .metrics-view-button {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 
   .agent-detail-panel {

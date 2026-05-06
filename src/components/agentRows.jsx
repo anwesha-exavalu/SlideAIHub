@@ -1,23 +1,23 @@
 export const agentRowsJson = [
   {
     key: '1',
-    agentName: 'Claim Sense Assistant',
+    agentName: 'Intelligent Document Processing',
     version: 'v2.3',
     category: 'Automation',
-    specialization: 'Claims intake triage and document routing',
+    specialization: 'Automated extraction, validation, and routing of mortgage documents',
     ownerName: 'Michael Carter',
     creationDate: '12 Jan 2026',
     lastUpdated: '28 Apr 2026',
-    department: 'Claims Operations',
+    department: 'Mortgage Document Operations',
     status: 'Active',
     model: 'GPT-4.1 Mini',
-    dataSources: 'FNOL inbox, claim documents',
+    dataSources: 'Mortgage applications, KYC docs, income statements',
     responseSla: '6 sec average',
     region: 'Sweden Central',
     contactEmail: 'michael.carter@slideaihub.com',
     contactPhone: '+46 8 5550 1201',
     description:
-      'Automates first-pass claim sorting, identifies missing documents, and sends the case to the right adjuster queue.',
+      'Processes incoming mortgage documents, extracts critical fields, flags missing items, and routes each case to the correct underwriting workflow.',
   },
   {
     key: '2',
