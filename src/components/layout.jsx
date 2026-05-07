@@ -31,7 +31,7 @@ function DashboardLayout({ userProfile, onLogout }) {
  
           <div className={layoutClassNames.brandCopy}>
             <Typography.Title level={3} className={layoutClassNames.headerTitle}>
-              AI Hub
+             Slide AI Hub
             </Typography.Title>
             <Typography.Text className={layoutClassNames.headerSubtitle}>Agent command center</Typography.Text>
           </div>
