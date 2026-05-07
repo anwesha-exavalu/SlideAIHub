@@ -110,11 +110,19 @@
 }
 
 .dashboard-layout {
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   background:
     radial-gradient(circle at 10% 8%, rgba(224, 231, 255, 0.85), transparent 36%),
     radial-gradient(circle at 90% 0%, rgba(102, 72, 220, 0.14), transparent 24%),
     linear-gradient(180deg, #fbfcff 0%, #f3f4f6 100%);
+}
+
+.dashboard-layout::-webkit-scrollbar {
+  width: 0;
+  display: none;
 }
 
 .dashboard-header {
@@ -333,6 +341,20 @@
   overflow: hidden;
   box-shadow: 0 18px 40px rgba(31, 41, 55, 0.1);
   animation: rise-in 0.5s 0.15s ease both;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.table-card * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.table-card::-webkit-scrollbar,
+.table-card *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .table-card .ant-card-head {
