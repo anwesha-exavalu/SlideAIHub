@@ -1,68 +1,51 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Button, Card, Layout, Typography } from 'antd';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Button, Card, Layout, Tag, Typography } from 'antd';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { agentPageClassNames } from './StyleComponent.js';
 
 const { Content } = Layout;
-const LIVE_AGENT_ID = '1';
-const DASHBOARD_API_URL = 'http://localhost:3000/dashboard';
 
 function MetricsPage() {
   const { agentId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-  const isLiveAgent = agentId === LIVE_AGENT_ID;
-  const [isLoading, setIsLoading] = useState(isLiveAgent);
-  const [apiError, setApiError] = useState('');
-  const [apiData, setApiData] = useState(null);
 
-  useEffect(() => {
-    if (!isLiveAgent) {
-      return undefined;
+  const stateAgentName = typeof location.state?.agentName === 'string' ? location.state.agentName : '';
+  const selectedAgentId =
+    typeof location.state?.sourceAgentId === 'string' || typeof location.state?.sourceAgentId === 'number'
+      ? String(location.state.sourceAgentId)
+      : agentId;
+
+  const summaryItems = useMemo(() => {
+    const items = [];
+
+    if (location.state?.sourceType) {
+      items.push({ label: 'Source', value: String(location.state.sourceType) });
     }
 
-    const controller = new AbortController();
+    if (location.state?.version) {
+      items.push({ label: 'Version', value: String(location.state.version) });
+    }
 
-    const loadDashboardData = async () => {
-      setIsLoading(true);
-      setApiError('');
+    if (location.state?.status) {
+      items.push({ label: 'Status', value: String(location.state.status) });
+    }
 
-      try {
-        const response = await fetch(DASHBOARD_API_URL, { signal: controller.signal });
+    if (location.state?.model) {
+      items.push({ label: 'Model', value: String(location.state.model) });
+    }
 
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
+    return items;
+  }, [location.state]);
 
-        const contentType = response.headers.get('content-type') ?? '';
-        const payload = contentType.includes('application/json')
-          ? await response.json()
-          : await response.text();
-
-        setApiData(payload);
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          setApiError(error.message || 'Unable to load dashboard data.');
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDashboardData();
-
-    return () => {
-      controller.abort();
-    };
-  }, [isLiveAgent]);
-
-  const formattedApiData = useMemo(() => {
-    if (apiData === null || apiData === undefined) {
+  const metricsPayload = useMemo(() => {
+    if (!location.state?.metrics) {
       return '';
     }
 
-    return typeof apiData === 'string' ? apiData : JSON.stringify(apiData, null, 2);
-  }, [apiData]);
+    return JSON.stringify(location.state.metrics, null, 2);
+  }, [location.state]);
 
   return (
     <Layout className={agentPageClassNames.layout}>
@@ -73,42 +56,40 @@ function MetricsPage() {
           </Typography.Title>
 
           <Typography.Paragraph className={agentPageClassNames.copy}>
-            {isLiveAgent
-              ? 'Live dashboard metrics loaded for this agent.'
-              : 'Metrics screen for this selected agent.'}
+            {stateAgentName ? `Metrics view for ${stateAgentName}.` : 'Metrics view for selected agent.'}
           </Typography.Paragraph>
 
           <Typography.Text className={agentPageClassNames.meta}>
-            Selected agent ID: {agentId}
+            Selected agent ID: {selectedAgentId}
           </Typography.Text>
 
-          {isLiveAgent && (
+          {summaryItems.length > 0 && (
             <section className={agentPageClassNames.liveSection} aria-live="polite">
-              {isLoading && (
-                <div className={agentPageClassNames.loaderWrap}>
-                  <div className={agentPageClassNames.loaderOrb} />
-                  <Typography.Text className={agentPageClassNames.loaderText}>
-                    Loading dashboard API data...
-                  </Typography.Text>
-                </div>
-              )}
-
-              {!isLoading && apiError && (
-                <Typography.Text className={agentPageClassNames.errorText}>{apiError}</Typography.Text>
-              )}
-
-              {!isLoading && !apiError && formattedApiData && (
-                <>
-                  <Typography.Text className={agentPageClassNames.responseLabel}>
-                    API Response
-                  </Typography.Text>
-                  <div className={agentPageClassNames.responseCard}>
-                    <pre className={agentPageClassNames.responsePre}>{formattedApiData}</pre>
-                  </div>
-                </>
-              )}
+              <Typography.Text className={agentPageClassNames.responseLabel}>Agent Snapshot</Typography.Text>
+              <div className={agentPageClassNames.responseCard}>
+                {summaryItems.map((item) => (
+                  <Tag key={item.label} style={{ marginBottom: 8 }}>
+                    {item.label}: {item.value}
+                  </Tag>
+                ))}
+              </div>
             </section>
           )}
+
+          <section className={agentPageClassNames.liveSection} aria-live="polite">
+            {metricsPayload ? (
+              <>
+                <Typography.Text className={agentPageClassNames.responseLabel}>Metrics Payload</Typography.Text>
+                <div className={agentPageClassNames.responseCard}>
+                  <pre className={agentPageClassNames.responsePre}>{metricsPayload}</pre>
+                </div>
+              </>
+            ) : (
+              <Typography.Text className={agentPageClassNames.copy}>
+                Metrics are not available for this agent in the current API response.
+              </Typography.Text>
+            )}
+          </section>
 
           <div className={agentPageClassNames.actions}>
             <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/dashboard')}>

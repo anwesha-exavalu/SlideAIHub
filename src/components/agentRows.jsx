@@ -18,6 +18,8 @@ export const agentRowsJson = [
     contactPhone: '+46 8 5550 1201',
     description:
       'Processes incoming mortgage documents, extracts critical fields, flags missing items, and routes each case to the correct underwriting workflow.',
+      subscription:'',
+      resourcegroup:''
   },
   {
     key: '2',

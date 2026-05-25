@@ -1,34 +1,62 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Button, Card, Layout, Typography } from 'antd';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { agentPageClassNames } from './StyleComponent.js';
 
 const { Content } = Layout;
-const LIVE_AGENT_ID = '1';
-const MORTGAGE_API_URL = 'http://localhost:3000/mortgage';
+
+function decodeRouteParam(value) {
+  if (!value) {
+    return '';
+  }
+
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
 
 function AgentPlaceholderPage() {
   const { agentId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-  const isLiveAgent = agentId === LIVE_AGENT_ID;
-  const [isLoading, setIsLoading] = useState(isLiveAgent);
+  const decodedAgentId = useMemo(() => decodeRouteParam(agentId), [agentId]);
+  const stateAgentName = typeof location.state?.agentName === 'string' ? location.state.agentName : '';
+  const stateEndpoint =
+    typeof location.state?.endpoint === 'string' ? location.state.endpoint.trim() : '';
+
+  const [agentName, setAgentName] = useState(stateAgentName || 'Agent Details Page');
+  const [endpointUrl, setEndpointUrl] = useState(stateEndpoint);
+  const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState('');
   const [apiData, setApiData] = useState(null);
 
   useEffect(() => {
-    if (!isLiveAgent) {
+    setApiData(null);
+    setApiError('');
+    setIsLoading(true);
+    setAgentName(stateAgentName || 'Agent Details Page');
+    setEndpointUrl(stateEndpoint);
+  }, [decodedAgentId, stateAgentName, stateEndpoint]);
+
+  useEffect(() => {
+    if (!endpointUrl) {
+      setIsLoading(false);
+      setApiError('Endpoint URL is not configured for this agent.');
       return undefined;
     }
 
+    let isActive = true;
     const controller = new AbortController();
 
-    const loadMortgageData = async () => {
+    const loadAgentEndpointData = async () => {
       setIsLoading(true);
       setApiError('');
 
       try {
-        const response = await fetch(MORTGAGE_API_URL, { signal: controller.signal });
+        const response = await fetch(endpointUrl, { signal: controller.signal });
 
         if (!response.ok) {
           throw new Error(`Request failed with status ${response.status}`);
@@ -39,22 +67,27 @@ function AgentPlaceholderPage() {
           ? await response.json()
           : await response.text();
 
-        setApiData(payload);
+        if (isActive) {
+          setApiData(payload);
+        }
       } catch (error) {
-        if (error.name !== 'AbortError') {
-          setApiError(error.message || 'Unable to load mortgage data.');
+        if (error.name !== 'AbortError' && isActive) {
+          setApiError(error.message || 'Unable to load endpoint data.');
         }
       } finally {
-        setIsLoading(false);
+        if (isActive) {
+          setIsLoading(false);
+        }
       }
     };
 
-    loadMortgageData();
+    loadAgentEndpointData();
 
     return () => {
+      isActive = false;
       controller.abort();
     };
-  }, [isLiveAgent]);
+  }, [endpointUrl]);
 
   const formattedApiData = useMemo(() => {
     if (apiData === null || apiData === undefined) {
@@ -69,46 +102,42 @@ function AgentPlaceholderPage() {
       <Content className={agentPageClassNames.content}>
         <Card className={agentPageClassNames.card}>
           <Typography.Title level={3} className={agentPageClassNames.title}>
-            {isLiveAgent ? 'Intelligent Document Processing' : 'Agent Details Page'}
+            {agentName}
           </Typography.Title>
 
           <Typography.Paragraph className={agentPageClassNames.copy}>
-            {isLiveAgent
-              ? 'Live data loaded from the mortgage service for this agent.'
-              : 'This is a placeholder page. Agent-level functionality will be added in the next phase.'}
+            Live data loaded from the selected agent endpoint.
           </Typography.Paragraph>
 
           <Typography.Text className={agentPageClassNames.meta}>
-            Selected agent ID: {agentId}
+            Selected agent ID: {decodedAgentId || agentId}
           </Typography.Text>
 
-          {isLiveAgent && (
-            <section className={agentPageClassNames.liveSection} aria-live="polite">
-              {isLoading && (
-                <div className={agentPageClassNames.loaderWrap}>
-                  <div className={agentPageClassNames.loaderOrb} />
-                  <Typography.Text className={agentPageClassNames.loaderText}>
-                    Loading mortgage API data...
-                  </Typography.Text>
+          <section className={agentPageClassNames.liveSection} aria-live="polite">
+            {isLoading && (
+              <div className={agentPageClassNames.loaderWrap}>
+                <div className={agentPageClassNames.loaderOrb} />
+                <Typography.Text className={agentPageClassNames.loaderText}>
+                  Loading agent endpoint data...
+                </Typography.Text>
+              </div>
+            )}
+
+            {!isLoading && apiError && (
+              <Typography.Text className={agentPageClassNames.errorText}>{apiError}</Typography.Text>
+            )}
+
+            {!isLoading && !apiError && formattedApiData && (
+              <>
+                <Typography.Text className={agentPageClassNames.responseLabel}>
+                  API Response
+                </Typography.Text>
+                <div className={agentPageClassNames.responseCard}>
+                  <pre className={agentPageClassNames.responsePre}>{formattedApiData}</pre>
                 </div>
-              )}
-
-              {!isLoading && apiError && (
-                <Typography.Text className={agentPageClassNames.errorText}>{apiError}</Typography.Text>
-              )}
-
-              {!isLoading && !apiError && formattedApiData && (
-                <>
-                  <Typography.Text className={agentPageClassNames.responseLabel}>
-                    API Response
-                  </Typography.Text>
-                  <div className={agentPageClassNames.responseCard}>
-                    <pre className={agentPageClassNames.responsePre}>{formattedApiData}</pre>
-                  </div>
-                </>
-              )}
-            </section>
-          )}
+              </>
+            )}
+          </section>
 
           <div className={agentPageClassNames.actions}>
             <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/dashboard')}>
