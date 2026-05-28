@@ -37,6 +37,8 @@ const SEARCHABLE_FIELDS = [
   'department',
   'model',
   'status',
+  'projectName',
+  'platform',
   'dataSources',
   'responseSla',
   'region',
@@ -66,11 +68,12 @@ const FOUNDRY_AGENTS_API_URL = (
 const CUSTOM_AGENTS_API_URL = (
   import.meta.env.VITE_CUSTOM_AGENTS_API_URL ?? 'http://127.0.0.1:8010/dashboard'
 ).trim();
-const DATABRICKS_NATIVE_AGENT_NAME = 'databricks-native-agent';
-const DATABRICKS_NATIVE_AGENT_URL =
-  'https://agent-openai-agents-sdk-7474657028758184.aws.databricksapps.com';
 const UPPERCASE_NAME_TOKENS = new Set(['idp', 'ai', 'cu']);
 const DASHBOARD_CACHE_KEY = '__AIHUB_DASHBOARD_CACHE__';
+const AGENT_EXTERNAL_URL_OVERRIDES = {
+  'cu-openapi-agent-v3:5':
+    'https://ai.azure.com/nextgen/r/biHtpIoDSUGwJL7jWoedCg,AIAgents001,,aiaifoundry001,proj-001/build/agents/cu-openapi-agent-v3/build',
+};
 
 function textOrNull(value) {
   if (value === undefined || value === null) {
@@ -90,6 +93,17 @@ function pickFirstText(...values) {
     const text = textOrNull(value);
     if (text) {
       return text;
+    }
+  }
+
+  return null;
+}
+
+function pickFirstDisplayValue(...values) {
+  for (const value of values) {
+    const normalized = normalizeDisplayValue(value);
+    if (normalized) {
+      return normalized;
     }
   }
 
@@ -342,8 +356,35 @@ function mapFoundryAgent(agent, index) {
   const latest = objectOrEmpty(agent?.versions?.latest);
   const metadata = objectOrEmpty(latest.metadata);
   const definition = objectOrEmpty(latest.definition);
-  const foundryId = pickFirstText(agent.id, agent.name, `foundry-agent-${index + 1}`);
+  const versionedFoundryId = pickFirstText(
+    latest.id,
+    latest.agent_id,
+    latest.agentId,
+    agent.latest_version_id,
+    agent.latestVersionId,
+  );
+  const foundryId = pickFirstText(versionedFoundryId, agent.id, agent.name, `foundry-agent-${index + 1}`);
   const { subscriptionId, resourceGroup } = resolveSubscriptionFields(agent);
+  const projectName = pickFirstDisplayValue(
+    agent.project,
+    agent.project_name,
+    agent.projectName,
+    latest.project,
+    latest.project_name,
+    latest.projectName,
+    metadata.project,
+    metadata.project_name,
+    metadata.projectName,
+    definition.project,
+    definition.project_name,
+    definition.projectName,
+  );
+  const platform = pickFirstDisplayValue(
+    agent.platform,
+    latest.platform,
+    metadata.platform,
+    definition.platform,
+  );
 
   return {
     id: foundryId,
@@ -362,6 +403,8 @@ function mapFoundryAgent(agent, index) {
     ),
     department: normalizeDisplayValue(agent.department),
     status: normalizeStatus(latest.status ?? agent.status),
+    projectName,
+    platform,
     model: normalizeDisplayValue(definition.model ?? agent.model),
     dataSources: normalizeDisplayValue(agent.dataSources),
     responseSla: normalizeDisplayValue(agent.responseSla),
@@ -389,6 +432,7 @@ function mapCustomAgent(agent, index) {
     `custom-agent-${index + 1}`,
   );
   const { subscriptionId, resourceGroup } = resolveSubscriptionFields(agent);
+  const serviceUrl = normalizeDisplayValue(agent?.service_url ?? agent?.serviceUrl);
 
   return {
     id: customId,
@@ -413,7 +457,8 @@ function mapCustomAgent(agent, index) {
     description: normalizeDisplayValue(agent?.description),
     subscription: textOrNull(agent?.subscription) ?? textOrNull(subscriptionId),
     resourcegroup: textOrNull(agent?.resourcegroup) ?? textOrNull(resourceGroup),
-    endpoint: normalizeDisplayValue(agent?.service_url ?? agent?.endpoint),
+    serviceUrl,
+    endpoint: serviceUrl ?? normalizeDisplayValue(agent?.endpoint),
     iconUrl: resolveIconUrl(agent?.iconUrl),
     metrics: agent?.metrics ?? null,
   };
@@ -606,14 +651,14 @@ function AITable() {
     let isActive = true;
 
     if (cachedAgentsBySource) {
-      setIsLoading(false);
-      setEndpointWarnings(cachedEndpointWarnings);
       return undefined;
     }
 
-    setIsLoading(true);
-    setLoadError('');
-    setEndpointWarnings([]);
+    const resetStateTimeoutId = setTimeout(() => {
+      setIsLoading(true);
+      setLoadError('');
+      setEndpointWarnings([]);
+    }, 0);
 
     loadAgentsOnce()
       .then((result) => {
@@ -642,6 +687,7 @@ function AITable() {
 
     return () => {
       isActive = false;
+      clearTimeout(resetStateTimeoutId);
     };
   }, []);
 
@@ -655,6 +701,17 @@ function AITable() {
     () => customRows.filter((record) => matchesSearch(record, normalizedSearch)),
     [customRows, normalizedSearch],
   );
+  const availableFoundryMetricIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          foundryRows
+            .map((row) => textOrNull(row.id))
+            .filter(Boolean),
+        ),
+      ),
+    [foundryRows],
+  );
 
   const totalAgentCount = foundryRows.length + customRows.length;
 
@@ -663,13 +720,10 @@ function AITable() {
     const identifierLabel = record.sourceType === SOURCE_TYPES.CUSTOM ? 'agentId' : 'id';
     const identifierValue = textOrNull(record.id);
     const identifierText = identifierValue ? `${identifierLabel}: ${identifierValue}` : null;
-    const normalizedAgentName = String(record.agentName ?? '')
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, '-');
-    const shouldOpenDatabricksNativeAgent =
-      record.sourceType === SOURCE_TYPES.CUSTOM &&
-      normalizedAgentName === DATABRICKS_NATIVE_AGENT_NAME;
+    const foundryPortalUrl = identifierValue ? AGENT_EXTERNAL_URL_OVERRIDES[identifierValue] : null;
+    const customServiceUrl =
+      record.sourceType === SOURCE_TYPES.CUSTOM ? textOrNull(record.serviceUrl) : null;
+    const agentClickUrl = foundryPortalUrl || customServiceUrl;
     const profileItems = [record.ownerName, identifierText, record.contactEmail, record.contactPhone].filter(
       Boolean,
     );
@@ -684,9 +738,9 @@ function AITable() {
 
               <div className={tableClassNames.agentCardCopy}>
                 <div className={tableClassNames.agentCardTitleRow}>
-                  {shouldOpenDatabricksNativeAgent ? (
+                  {agentClickUrl ? (
                     <a
-                      href={DATABRICKS_NATIVE_AGENT_URL}
+                      href={agentClickUrl}
                       target="_blank"
                       rel="noreferrer"
                       className={tableClassNames.agentNameButton}
@@ -737,6 +791,7 @@ function AITable() {
                   agentName: record.agentName,
                   sourceType: record.sourceType,
                   sourceAgentId: record.id ?? record.key,
+                  availableAgentIds: availableFoundryMetricIds,
                   metrics: record.metrics,
                   status: record.status,
                   model: record.model,
@@ -761,6 +816,8 @@ function AITable() {
             {record.status && (
               <Tag color={STATUS_COLOR_MAP[record.status.toLowerCase()] ?? 'default'}>{record.status}</Tag>
             )}
+            {record.projectName && <Tag>{record.projectName}</Tag>}
+            {record.platform && <Tag>{record.platform}</Tag>}
             {record.model && <Tag>{record.model}</Tag>}
             {record.gateway_path && <Tag>{record.gateway_path}</Tag>}
             {record.responseSla && <Tag>SLA: {record.responseSla}</Tag>}
