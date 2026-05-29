@@ -2,9 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeftOutlined,
   BarChartOutlined,
+  ClockCircleOutlined,
   DatabaseOutlined,
+  FileTextOutlined,
   LineChartOutlined,
   ReloadOutlined,
+  RobotOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import {
   Alert,
@@ -31,9 +35,14 @@ const TOKENS_BY_AGENT_API_URL = (
   import.meta.env.VITE_FOUNDRY_TOKENS_BY_AGENT_API_URL ??
   'http://localhost:8000/api/foundry-logs/raw/tokens-by-agent'
 ).trim();
+const CU_USAGE_METRICS_API_URL = (
+  import.meta.env.VITE_FOUNDRY_CU_USAGE_METRICS_API_URL ??
+  'http://localhost:8000/api/foundry-logs/raw/cu-usage-metrics'
+).trim();
 const FOUNDRY_AGENTS_API_URL = (
   import.meta.env.VITE_FOUNDRY_AGENTS_API_URL ?? 'http://localhost:8000/api/agents'
 ).trim();
+const CU_BUSINESS_METRICS_AGENT_ID = 'cu-openapi-agent-v3:5';
 const DASHBOARD_CACHE_KEY = '__AIHUB_DASHBOARD_CACHE__';
 const DEFAULT_METRIC_SET = [
   'dependencies/custom/gen_ai.usage.input_tokens_sum',
@@ -299,6 +308,174 @@ function normalizeMetricRows(payload) {
   });
 }
 
+function parseJsonObject(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === 'object') {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function extractBusinessRowsFromPayload(payload) {
+  if (Array.isArray(payload?.usage_rows)) {
+    return payload.usage_rows;
+  }
+
+  if (Array.isArray(payload?.usageRows)) {
+    return payload.usageRows;
+  }
+
+  return extractRowsFromPayload(payload);
+}
+
+function normalizeBusinessMetricRow(row, index) {
+  const usage = row?.usage && typeof row.usage === 'object' ? row.usage : {};
+  const tokenMap = usage?.tokens && typeof usage.tokens === 'object' ? usage.tokens : {};
+  const normalizedTokens = Object.entries(tokenMap)
+    .map(([key, value]) => ({
+      label: key,
+      value: numberOrZero(value),
+    }))
+    .filter((entry) => entry.value > 0);
+
+  return {
+    key: `business-metric-row-${index}`,
+    timestamp:
+      textOrEmpty(row?.timestamp) ||
+      textOrEmpty(row?.ts) ||
+      textOrEmpty(row?.TimeGenerated) ||
+      textOrEmpty(row?.time_bin) ||
+      textOrEmpty(row?.time),
+    toolName: textOrEmpty(row?.tool_name ?? row?.toolName),
+    correlationId: textOrEmpty(row?.correlation_id ?? row?.correlationId),
+    filename: textOrEmpty(row?.filename),
+    extractionLatencySec: numberOrZero(row?.extraction_latency_sec ?? row?.extractionLatencySec),
+    totalLatencySec: numberOrZero(row?.total_latency_sec ?? row?.totalLatencySec),
+    traceparent: textOrEmpty(row?.traceparent),
+    documentPagesStandard: numberOrZero(
+      usage?.documentPagesStandard ?? row?.documentPagesStandard ?? row?.document_pages_standard,
+    ),
+    contextualizationTokens: numberOrZero(
+      usage?.contextualizationTokens ?? row?.contextualizationTokens ?? row?.contextualization_tokens,
+    ),
+    tokenBreakdown: normalizedTokens,
+    tokenTotal: normalizedTokens.reduce((sum, token) => sum + token.value, 0),
+  };
+}
+
+function extractBusinessMetricFromToolResult(row, index) {
+  const toolResultEnvelope = parseJsonObject(row?.tool_result ?? row?.toolResult);
+  const responsePayload = parseJsonObject(toolResultEnvelope?.response) ?? toolResultEnvelope;
+
+  if (!responsePayload || typeof responsePayload !== 'object') {
+    return null;
+  }
+
+  const observability =
+    responsePayload?.observability_metrics && typeof responsePayload.observability_metrics === 'object'
+      ? responsePayload.observability_metrics
+      : {};
+  const contentResponse =
+    responsePayload?.content_understanding_response &&
+    typeof responsePayload.content_understanding_response === 'object'
+      ? responsePayload.content_understanding_response
+      : {};
+  const usage = contentResponse?.usage && typeof contentResponse.usage === 'object' ? contentResponse.usage : {};
+
+  return normalizeBusinessMetricRow(
+    {
+      ...row,
+      correlation_id: row?.correlation_id ?? observability?.correlation_id,
+      filename: row?.filename ?? observability?.filename,
+      extraction_latency_sec: row?.extraction_latency_sec ?? observability?.extraction_latency_sec,
+      total_latency_sec: row?.total_latency_sec ?? observability?.total_latency_sec,
+      traceparent: row?.traceparent ?? observability?.traceparent,
+      usage,
+    },
+    index,
+  );
+}
+
+function normalizeBusinessMetricsRows(payload) {
+  return extractBusinessRowsFromPayload(payload)
+    .map((row, index) => {
+      const directRow = normalizeBusinessMetricRow(row, index);
+      const hasDirectUsage =
+        directRow.documentPagesStandard > 0 || directRow.contextualizationTokens > 0 || directRow.tokenTotal > 0;
+
+      if (hasDirectUsage) {
+        return directRow;
+      }
+
+      const fallbackFromToolResult = extractBusinessMetricFromToolResult(row, index);
+      return fallbackFromToolResult ?? directRow;
+    })
+    .filter(
+      (row) =>
+        Boolean(row.timestamp) ||
+        Boolean(row.filename) ||
+        row.extractionLatencySec > 0 ||
+        row.totalLatencySec > 0 ||
+        row.documentPagesStandard > 0 ||
+        row.contextualizationTokens > 0 ||
+        row.tokenTotal > 0,
+    );
+}
+
+function buildMetricsQueryParams(nextFilters, queryAgentId) {
+  const params = new URLSearchParams();
+  params.set('source', nextFilters.source || DEFAULT_SOURCE);
+  params.append('splitBy', nextFilters.splitBy || DEFAULT_SPLIT_BY);
+  params.append('split_by', nextFilters.splitBy || DEFAULT_SPLIT_BY);
+
+  (nextFilters.metricSet?.length ? nextFilters.metricSet : DEFAULT_METRIC_SET).forEach((metric) => {
+    const metricName = textOrEmpty(metric);
+    if (!metricName) {
+      return;
+    }
+
+    params.append('metricSet', metricName);
+    params.append('metric_set', metricName);
+  });
+
+  params.set('agent_id', queryAgentId);
+  params.set('filterAgentId', queryAgentId);
+  params.set('interval', nextFilters.interval);
+  params.set('timestamp_mode', nextFilters.timestampMode);
+  params.set('timestampMode', nextFilters.timestampMode);
+
+  if (nextFilters.timestampMode === 'exact') {
+    params.set('max_rows', String(nextFilters.maxRows));
+    params.set('maxRows', String(nextFilters.maxRows));
+  }
+
+  const normalizedStart = normalizeIsoInput(nextFilters.startTime);
+  const normalizedEnd = normalizeIsoInput(nextFilters.endTime);
+
+  if (normalizedStart && normalizedEnd) {
+    params.set('start_time', normalizedStart);
+    params.set('end_time', normalizedEnd);
+  } else {
+    const boundedHours = Math.max(1, Math.min(MAX_HOURS, Number(nextFilters.hours || 24)));
+    params.set('hours', String(boundedHours));
+  }
+
+  return params;
+}
+
 function extractAgentIdsFromDashboardCache() {
   if (typeof window === 'undefined') {
     return [];
@@ -451,6 +628,7 @@ function MetricsPage() {
     maxRows: 2000,
   }));
   const [metricsRows, setMetricsRows] = useState([]);
+  const [businessMetricsRows, setBusinessMetricsRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [queryMetadata, setQueryMetadata] = useState(null);
@@ -494,6 +672,31 @@ function MetricsPage() {
   }, [metricsRows]);
 
   const chartRows = useMemo(() => metricsRows.slice(-MAX_CHART_ROWS), [metricsRows]);
+  const businessMetricsTimelineRows = useMemo(
+    () =>
+      [...businessMetricsRows].sort((left, right) => {
+        const leftTs = new Date(left.timestamp).getTime();
+        const rightTs = new Date(right.timestamp).getTime();
+
+        if (!Number.isFinite(leftTs) && !Number.isFinite(rightTs)) {
+          return 0;
+        }
+
+        if (!Number.isFinite(leftTs)) {
+          return 1;
+        }
+
+        if (!Number.isFinite(rightTs)) {
+          return -1;
+        }
+
+        return rightTs - leftTs;
+      }),
+    [businessMetricsRows],
+  );
+  const shouldShowBusinessMetrics =
+    textOrEmpty(filters.agentId) === CU_BUSINESS_METRICS_AGENT_ID ||
+    textOrEmpty(queryMetadata?.queriedAgentId) === CU_BUSINESS_METRICS_AGENT_ID;
   const hasCustomRange = Boolean(normalizeIsoInput(filters.startTime) && normalizeIsoInput(filters.endTime));
   const chartRangeLabels = useMemo(() => {
     if (chartRows.length > 0) {
@@ -580,42 +783,7 @@ function MetricsPage() {
     setErrorMessage('');
 
     try {
-      const params = new URLSearchParams();
-      params.set('source', nextFilters.source || DEFAULT_SOURCE);
-      params.append('splitBy', nextFilters.splitBy || DEFAULT_SPLIT_BY);
-      params.append('split_by', nextFilters.splitBy || DEFAULT_SPLIT_BY);
-
-      (nextFilters.metricSet?.length ? nextFilters.metricSet : DEFAULT_METRIC_SET).forEach((metric) => {
-        const metricName = textOrEmpty(metric);
-        if (!metricName) {
-          return;
-        }
-
-        params.append('metricSet', metricName);
-        params.append('metric_set', metricName);
-      });
-
-      params.set('agent_id', queryAgentId);
-      params.set('filterAgentId', queryAgentId);
-      params.set('interval', nextFilters.interval);
-      params.set('timestamp_mode', nextFilters.timestampMode);
-      params.set('timestampMode', nextFilters.timestampMode);
-
-      if (nextFilters.timestampMode === 'exact') {
-        params.set('max_rows', String(nextFilters.maxRows));
-        params.set('maxRows', String(nextFilters.maxRows));
-      }
-
-      const normalizedStart = normalizeIsoInput(nextFilters.startTime);
-      const normalizedEnd = normalizeIsoInput(nextFilters.endTime);
-
-      if (normalizedStart && normalizedEnd) {
-        params.set('start_time', normalizedStart);
-        params.set('end_time', normalizedEnd);
-      } else {
-        const boundedHours = Math.max(1, Math.min(MAX_HOURS, Number(nextFilters.hours || 24)));
-        params.set('hours', String(boundedHours));
-      }
+      const params = buildMetricsQueryParams(nextFilters, queryAgentId);
 
       const response = await fetch(`${TOKENS_BY_AGENT_API_URL}?${params.toString()}`);
 
@@ -643,8 +811,29 @@ function MetricsPage() {
         timestampMode: nextFilters.timestampMode,
         queriedAgentId: queryAgentId,
       });
+
+      if (queryAgentId === CU_BUSINESS_METRICS_AGENT_ID) {
+        try {
+          const businessResponse = await fetch(`${CU_USAGE_METRICS_API_URL}?${params.toString()}`);
+
+          if (!businessResponse.ok) {
+            throw new Error(`Request failed with status ${businessResponse.status}`);
+          }
+
+          const businessContentType = businessResponse.headers.get('content-type') ?? '';
+          const businessPayload = businessContentType.includes('application/json')
+            ? await businessResponse.json()
+            : { rows: [] };
+          setBusinessMetricsRows(normalizeBusinessMetricsRows(businessPayload));
+        } catch {
+          setBusinessMetricsRows([]);
+        }
+      } else {
+        setBusinessMetricsRows([]);
+      }
     } catch (error) {
       setMetricsRows([]);
+      setBusinessMetricsRows([]);
       setQueryMetadata(null);
       setErrorMessage(error?.message || 'Unable to load metrics data.');
     } finally {
@@ -922,6 +1111,101 @@ function MetricsPage() {
               </Col>
             ))}
           </Row>
+
+          {shouldShowBusinessMetrics && (
+            <Card className={metricsPageClassNames.businessWidgetCard} title="Business Metrics">
+              {businessMetricsTimelineRows.length > 0 ? (
+                <Space direction="vertical" size={14} className={metricsPageClassNames.businessMetricList}>
+                  {businessMetricsTimelineRows.map((businessMetric, index) => (
+                    <Card
+                      key={businessMetric.key ?? `${businessMetric.timestamp}-${index + 1}`}
+                      className={metricsPageClassNames.businessMetricEntry}
+                      bordered={false}
+                    >
+                      <div className={metricsPageClassNames.businessMetricEntryMeta}>
+                        <Tag className={metricsPageClassNames.snapshotTag}>Snapshot {index + 1}</Tag>
+                        <Typography.Text>
+                          <ClockCircleOutlined /> {formatTimestamp(businessMetric.timestamp)}
+                        </Typography.Text>
+                        {businessMetric.correlationId && (
+                          <Typography.Text>Correlation ID: {businessMetric.correlationId}</Typography.Text>
+                        )}
+                      </div>
+
+                      <Row gutter={[14, 14]}>
+                        <Col xs={24} lg={8}>
+                          <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
+                            <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
+                              <ClockCircleOutlined /> Latency Snapshot
+                            </Typography.Text>
+                            <Space direction="vertical" size={4} className={metricsPageClassNames.businessMetricBody}>
+                              <Typography.Text>
+                                <FileTextOutlined /> {businessMetric.filename || 'Unknown file'}
+                              </Typography.Text>
+                              <Typography.Text>
+                                <ThunderboltOutlined /> Extraction: {businessMetric.extractionLatencySec.toFixed(2)}s
+                              </Typography.Text>
+                              <Typography.Text>
+                                <ThunderboltOutlined /> Total: {businessMetric.totalLatencySec.toFixed(2)}s
+                              </Typography.Text>
+                              {businessMetric.traceparent && (
+                                <Typography.Text>Trace: {businessMetric.traceparent}</Typography.Text>
+                              )}
+                            </Space>
+                          </Card>
+                        </Col>
+
+                        <Col xs={24} lg={8}>
+                          <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
+                            <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
+                              <BarChartOutlined /> Usage Overview
+                            </Typography.Text>
+                            <Space direction="vertical" size={4} className={metricsPageClassNames.businessMetricBody}>
+                              <Typography.Text>
+                                Pages (Standard): {formatNumber(businessMetric.documentPagesStandard)}
+                              </Typography.Text>
+                              <Typography.Text>
+                                Contextualization Tokens: {formatNumber(businessMetric.contextualizationTokens)}
+                              </Typography.Text>
+                              <Typography.Text>
+                                Tool: {businessMetric.toolName || 'Unknown tool'}
+                              </Typography.Text>
+                            </Space>
+                          </Card>
+                        </Col>
+
+                        <Col xs={24} lg={8}>
+                          <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
+                            <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
+                              <RobotOutlined /> Token Breakdown
+                            </Typography.Text>
+                            <Space direction="vertical" size={4} className={metricsPageClassNames.businessMetricBody}>
+                              {businessMetric.tokenBreakdown.length > 0 ? (
+                                businessMetric.tokenBreakdown.map((tokenRow) => (
+                                  <Typography.Text key={tokenRow.label}>
+                                    {tokenRow.label}: {formatNumber(tokenRow.value)}
+                                  </Typography.Text>
+                                ))
+                              ) : (
+                                <Typography.Text>No token values found.</Typography.Text>
+                              )}
+                              <Typography.Text>
+                                Total: {formatNumber(businessMetric.tokenTotal)}
+                              </Typography.Text>
+                            </Space>
+                          </Card>
+                        </Col>
+                      </Row>
+                    </Card>
+                  ))}
+                </Space>
+              ) : (
+                <div className={metricsPageClassNames.tableLoadingState}>
+                  <Typography.Text>No business metric rows returned for this filter combination.</Typography.Text>
+                </div>
+              )}
+            </Card>
+          )}
 
           <Card
             className={metricsPageClassNames.chartCard}
