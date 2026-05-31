@@ -15,6 +15,7 @@ import {
   Button,
   Card,
   Col,
+  Collapse,
   Input,
   InputNumber,
   Layout,
@@ -1029,24 +1030,7 @@ function MetricsPage() {
                 />
               </Col>
 
-              <Col xs={24} md={8}>
-                <Typography.Text className={metricsPageClassNames.fieldLabel}>Agent ID</Typography.Text>
-                <Select
-                  showSearch
-                  value={filters.agentId || undefined}
-                  placeholder="Select agent id"
-                  options={availableAgentIds.map((value) => ({
-                    label: formatAgentIdForLabel(value),
-                    value,
-                  }))}
-                  onChange={(value) => setFilters((prev) => ({ ...prev, agentId: value ?? '' }))}
-                  filterOption={(input, option) =>
-                    String(option?.value ?? '')
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
-                />
-              </Col>
+             
 
               <Col xs={24} md={8}>
                 <Typography.Text className={metricsPageClassNames.fieldLabel}>Timestamp Mode</Typography.Text>
@@ -1115,90 +1099,106 @@ function MetricsPage() {
           {shouldShowBusinessMetrics && (
             <Card className={metricsPageClassNames.businessWidgetCard} title="Business Metrics">
               {businessMetricsTimelineRows.length > 0 ? (
-                <Space direction="vertical" size={14} className={metricsPageClassNames.businessMetricList}>
-                  {businessMetricsTimelineRows.map((businessMetric, index) => (
-                    <Card
-                      key={businessMetric.key ?? `${businessMetric.timestamp}-${index + 1}`}
-                      className={metricsPageClassNames.businessMetricEntry}
-                      bordered={false}
-                    >
-                      <div className={metricsPageClassNames.businessMetricEntryMeta}>
-                        <Tag className={metricsPageClassNames.snapshotTag}>Snapshot {index + 1}</Tag>
-                        <Typography.Text>
-                          <ClockCircleOutlined /> {formatTimestamp(businessMetric.timestamp)}
-                        </Typography.Text>
-                        {businessMetric.correlationId && (
-                          <Typography.Text>Correlation ID: {businessMetric.correlationId}</Typography.Text>
-                        )}
-                      </div>
-
-                      <Row gutter={[14, 14]}>
-                        <Col xs={24} lg={8}>
-                          <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
-                            <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
-                              <ClockCircleOutlined /> Latency Snapshot
-                            </Typography.Text>
-                            <Space direction="vertical" size={4} className={metricsPageClassNames.businessMetricBody}>
-                              <Typography.Text>
-                                <FileTextOutlined /> {businessMetric.filename || 'Unknown file'}
-                              </Typography.Text>
-                              <Typography.Text>
-                                <ThunderboltOutlined /> Extraction: {businessMetric.extractionLatencySec.toFixed(2)}s
-                              </Typography.Text>
-                              <Typography.Text>
-                                <ThunderboltOutlined /> Total: {businessMetric.totalLatencySec.toFixed(2)}s
-                              </Typography.Text>
-                              {businessMetric.traceparent && (
-                                <Typography.Text>Trace: {businessMetric.traceparent}</Typography.Text>
-                              )}
-                            </Space>
-                          </Card>
-                        </Col>
-
-                        <Col xs={24} lg={8}>
-                          <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
-                            <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
-                              <BarChartOutlined /> Usage Overview
-                            </Typography.Text>
-                            <Space direction="vertical" size={4} className={metricsPageClassNames.businessMetricBody}>
-                              <Typography.Text>
-                                Pages (Standard): {formatNumber(businessMetric.documentPagesStandard)}
-                              </Typography.Text>
-                              <Typography.Text>
-                                Contextualization Tokens: {formatNumber(businessMetric.contextualizationTokens)}
-                              </Typography.Text>
-                              <Typography.Text>
-                                Tool: {businessMetric.toolName || 'Unknown tool'}
-                              </Typography.Text>
-                            </Space>
-                          </Card>
-                        </Col>
-
-                        <Col xs={24} lg={8}>
-                          <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
-                            <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
-                              <RobotOutlined /> Token Breakdown
-                            </Typography.Text>
-                            <Space direction="vertical" size={4} className={metricsPageClassNames.businessMetricBody}>
-                              {businessMetric.tokenBreakdown.length > 0 ? (
-                                businessMetric.tokenBreakdown.map((tokenRow) => (
-                                  <Typography.Text key={tokenRow.label}>
-                                    {tokenRow.label}: {formatNumber(tokenRow.value)}
+                <div className={metricsPageClassNames.businessMetricList}>
+                  <Collapse
+                    accordion
+                    className={metricsPageClassNames.businessMetricAccordion}
+                    items={businessMetricsTimelineRows.map((businessMetric, index) => ({
+                      key: businessMetric.key ?? `snapshot-${index + 1}`,
+                      label: (
+                        <div className={metricsPageClassNames.businessMetricEntryMeta}>
+                          <Tag className={metricsPageClassNames.snapshotTag}>Snapshot {index + 1}</Tag>
+                          <Typography.Text>
+                            <ClockCircleOutlined /> {formatTimestamp(businessMetric.timestamp)}
+                          </Typography.Text>
+                          {businessMetric.correlationId && (
+                            <Typography.Text>Correlation ID: {businessMetric.correlationId}</Typography.Text>
+                          )}
+                        </div>
+                      ),
+                      children: (
+                        <div className={metricsPageClassNames.businessMetricPanelBody}>
+                          <Row gutter={[14, 14]}>
+                            <Col xs={24} lg={8}>
+                              <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
+                                <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
+                                  <ClockCircleOutlined /> Latency Snapshot
+                                </Typography.Text>
+                                <Space
+                                  direction="vertical"
+                                  size={4}
+                                  className={metricsPageClassNames.businessMetricBody}
+                                >
+                                  <Typography.Text>
+                                    <FileTextOutlined /> {businessMetric.filename || 'Unknown file'}
                                   </Typography.Text>
-                                ))
-                              ) : (
-                                <Typography.Text>No token values found.</Typography.Text>
-                              )}
-                              <Typography.Text>
-                                Total: {formatNumber(businessMetric.tokenTotal)}
-                              </Typography.Text>
-                            </Space>
-                          </Card>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))}
-                </Space>
+                                  <Typography.Text>
+                                    <ThunderboltOutlined /> Extraction: {businessMetric.extractionLatencySec.toFixed(2)}s
+                                  </Typography.Text>
+                                  <Typography.Text>
+                                    <ThunderboltOutlined /> Total: {businessMetric.totalLatencySec.toFixed(2)}s
+                                  </Typography.Text>
+                                  {businessMetric.traceparent && (
+                                    <Typography.Text>Trace: {businessMetric.traceparent}</Typography.Text>
+                                  )}
+                                </Space>
+                              </Card>
+                            </Col>
+
+                            <Col xs={24} lg={8}>
+                              <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
+                                <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
+                                  <BarChartOutlined /> Usage Overview
+                                </Typography.Text>
+                                <Space
+                                  direction="vertical"
+                                  size={4}
+                                  className={metricsPageClassNames.businessMetricBody}
+                                >
+                                  <Typography.Text>
+                                    Pages (Standard): {formatNumber(businessMetric.documentPagesStandard)}
+                                  </Typography.Text>
+                                  <Typography.Text>
+                                    Contextualization Tokens: {formatNumber(businessMetric.contextualizationTokens)}
+                                  </Typography.Text>
+                                  <Typography.Text>
+                                    Tool: {businessMetric.toolName || 'Unknown tool'}
+                                  </Typography.Text>
+                                </Space>
+                              </Card>
+                            </Col>
+
+                            <Col xs={24} lg={8}>
+                              <Card className={metricsPageClassNames.businessMetricCard} bordered={false}>
+                                <Typography.Text className={metricsPageClassNames.businessMetricTitle}>
+                                  <RobotOutlined /> Token Breakdown
+                                </Typography.Text>
+                                <Space
+                                  direction="vertical"
+                                  size={4}
+                                  className={metricsPageClassNames.businessMetricBody}
+                                >
+                                  {businessMetric.tokenBreakdown.length > 0 ? (
+                                    businessMetric.tokenBreakdown.map((tokenRow) => (
+                                      <Typography.Text key={tokenRow.label}>
+                                        {tokenRow.label}: {formatNumber(tokenRow.value)}
+                                      </Typography.Text>
+                                    ))
+                                  ) : (
+                                    <Typography.Text>No token values found.</Typography.Text>
+                                  )}
+                                  <Typography.Text>
+                                    Total: {formatNumber(businessMetric.tokenTotal)}
+                                  </Typography.Text>
+                                </Space>
+                              </Card>
+                            </Col>
+                          </Row>
+                        </div>
+                      ),
+                    }))}
+                  />
+                </div>
               ) : (
                 <div className={metricsPageClassNames.tableLoadingState}>
                   <Typography.Text>No business metric rows returned for this filter combination.</Typography.Text>
