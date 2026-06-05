@@ -43,7 +43,7 @@ const CU_USAGE_METRICS_API_URL = (
 const FOUNDRY_AGENTS_API_URL = (
   import.meta.env.VITE_FOUNDRY_AGENTS_API_URL ?? 'http://localhost:8000/api/agents'
 ).trim();
-const CU_BUSINESS_METRICS_AGENT_ID = 'cu-openapi-agent-v3:5';
+const CU_BUSINESS_METRICS_AGENT_ID = 'cu-openapi-agent-v3:6';
 const DASHBOARD_CACHE_KEY = '__AIHUB_DASHBOARD_CACHE__';
 const DEFAULT_METRIC_SET = [
   'dependencies/custom/gen_ai.usage.input_tokens_sum',
